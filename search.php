@@ -2,7 +2,7 @@
 require './includes/bootstrap.php';
 
 if( ! empty($_POST['phrase'])) {
-	header('Location: ' . URL . 'search/' . urlencode($_POST['phrase']));
+	header('Location: ' . URL . 'search/' . str_replace('+', ' ', urlencode($_POST['phrase'])));
 	exit;
 }
 

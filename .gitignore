@@ -1,5 +1,6 @@
-*.cache.php
-favicon.png
-/includes/config.php
-/img/*
-/thumbs/*
+*.swp
+.DS_Store
+*.phps
+*.html
+/img/
+/thumbs/

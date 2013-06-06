@@ -1,0 +1,18 @@
+@import url('Tinychan.css');
+
+body {
+	background: red url(/CWC_WatchYouFap_45rot_dithered.png) bottom right no-repeat fixed;
+	font-family: 'comic sans ms', cursive;
+}
+table tr td {
+	background: rgba(255,255,255,0.5);
+}
+table tr.odd td {
+	background: rgba(255,255,255,0.6);
+}
+table tr:hover td {
+	background: #00f;
+}
+table tr.odd:hover td {
+	background: #ff0;
+}

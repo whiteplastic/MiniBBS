@@ -23,6 +23,7 @@ $columns = array
 $replies = new Table($columns, 1);
 $replies->add_td_class(1, 'topic_headline');
 $replies->add_td_class(0, 'snippet');
+$replies->ad(AD_FILE, 10);
 
 while ($reply = $res->fetchObject()) {
 	$values = array

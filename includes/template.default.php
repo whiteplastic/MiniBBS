@@ -4,21 +4,25 @@
  * $this references variables and functions within that class.
  */
 global $timer;
-
+$show_cwc = $_SERVER["REQUEST_TIME"] > 1364781600 && $_SERVER["REQUEST_TIME"] < 1364868000;
 $this->gzhandler();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-	<title><?php echo strip_tags($this->title) . ' — ' . SITE_TITLE ?></title>
+	<meta name="google-site-verification" content="aibwhzQXqQkYGXDHFuEUFjE7JsdE67OEPx2rGteBrzc" />
+	<title><?php echo strip_tags($this->title) . ' — ' . SITE_TITLE; echo $_SERVER['HTTP_HOST'] !== HOSTNAME ? " (via a proxy)" : "" ?></title>
 	<link rel="icon" type="image/png" href="<?php echo DIR ?>favicon.png" />
-	
+
+	<!-- remove this in june -->
+	<link rel="stylesheet" type="text/css" href="//img.tinychan.<?php echo stristr($_SERVER['HTTP_HOST'], 'org') ? 'org' : 'net' ?>/kill-cookies.php">
+
 <?php	
 	if($_SESSION['settings']['style'] != 'Custom only'): 
 ?>
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?14" />
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
+	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . ($_le_style = $this->get_stylesheet()) . '.css?9' ?>" />
 <?php
 	endif;
 	
@@ -41,15 +45,29 @@ $this->gzhandler();
 <?php
 	endif;
 ?>
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?6"></script>
 <?php
 	echo $this->head
 ?>
+	<style>
+		tr.adrow td, tr.adrow:hover td {
+			background: transparent;
+			overflow: hidden;
+		}
+
+		pre.ansi {
+			line-height: 100%;
+			font-weight: bold;
+		}
+
+<?php // if ($show_cwc) echo @file_get_contents("april1_style.css") ?>
+	</style>
 </head>
 
 <body<?php echo ( ! empty($this->onload) ? ' onload="' . $this->onload . '"' : '' ) ?>>
 <span id="top"></span>
+<?php if ($_le_style == 'CWC') echo @file_get_contents("april1.html") ?>
 <?php
 if( ! empty($_SESSION['notice'])):
 ?>
@@ -58,13 +76,7 @@ if( ! empty($_SESSION['notice'])):
 	unset($_SESSION['notice']);
 endif;
 ?>
-<div id="header">
-	<h1 id="logo"><a rel="index" href="<?php echo DIR ?>"><?php echo SITE_TITLE ?></a></h1>
-	
-	<form action="<?php echo DIR ?>search" method="post">
-		<input id="search_phrase" name="phrase" type="text" size="24" maxlength="255" class="inline" />
-		<input type="submit" value="Search" name="deep_search" class="inline" />
-	</form>
+	<h1 id="logo"><a rel="index" href="<?php echo DIR ?>"><?php echo SITE_TITLE ?></a><?php echo $_SERVER['HTTP_HOST'] !== HOSTNAME ? '<sup>via a proxy</sup>' : '' ?></h1>
 	
 	<ul id="main_menu" class="menu">
 <?php
@@ -93,14 +105,16 @@ foreach($this->get_user_menu() as $linked_text => $path):
 endforeach;
 ?>
 	</ul>
-</div>
 
 <h2><?php echo $this->title ?></h2>
 <?php
 echo $this->content;
 $timer->stop();
 ?>
-<div id="footer" class="unimportant">Powered by <strong><a href="http://minibbs.org">MiniBBS</a></strong>. This page was generated in <strong><?php echo round($timer->total, 3) ?></strong> seconds. <?php echo round($timer->sql_total*100/$timer->total) ?>% of that was spent running <strong><?php echo (int) $timer->sql_count ?></strong> SQL queries. <noscript><br />Note: Your browser's JavaScript is disabled; some site features may not fully function.</noscript></div>
+
+<noscript><br />Note: Your browser's JavaScript is disabled; some site features may not fully function.</noscript>
+
+<!-- Generated in <?php echo round($timer->total, 5) ?> seconds. <?php echo round($timer->sql_total*100/$timer->total) ?>% of that was spent running <?php echo (int) $timer->sql_count ?> SQL queries. -->
 
 <form id="quick_action" action="" method="post" class="noscreen">
 	<?php csrf_token() ?>

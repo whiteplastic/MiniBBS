@@ -62,7 +62,7 @@ if($pm->destination == 'mods') {
 	$template->title .= ' to all administrators';
 }
 
-if($pm->source == 'system') {
+if($pm->source == 'system' || $pm->source == 'advert') {
 	$template->title = 'System message';
 	$system_pm = true;
 }
@@ -88,6 +88,8 @@ do {
 	}
 	if($pm->source == 'system') {
 		$author = '<em>System</em>';
+	} elseif ($pm->source == 'advert') {
+		$author = '<em>Advertisement</em>';	
 	} else {
 		$author = '<span class="poster_number_' . $participants[$pm->source] . '">' . format_name($pm->name, $pm->trip, $perm->get('link', $pm->source), $participants[$pm->source]) . '</span>';
 		if($pm->source == $_SESSION['UID']) {
@@ -99,6 +101,9 @@ do {
 		<td class="minimal"><?php echo $author ?></td>
 		<td class="pm_body" id="reply_<?php echo $pm->id?>">
 <?php 
+			if ($pm->source == 'advert') {
+				echo '<div class="pm_spam">'.file_get_contents(AD_FILE).'</div>';
+			}
 			echo parser::parse($pm->contents);
 			// If this message was sent via a "PM" link in a topic, provide context.
 			if( ! empty($pm->topic_headline)) {

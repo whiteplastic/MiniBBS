@@ -26,16 +26,20 @@ if ($_GET['reply']) {
 		error::fatal('Invalid topic ID.');
 	}
 	
-	$res = $db->q('SELECT headline, author, replies, deleted, locked, last_post FROM topics WHERE id = ?', $_GET['reply']);
+	$res = $db->q('SELECT headline, author, replies, deleted, locked, last_post, no_shitposters FROM topics WHERE id = ?', $_GET['reply']);
 	if ($db->num_rows() < 1) {
 		$template->title = 'Non-existent topic';
 		error::fatal('There is no such topic. It may have been deleted.');
 	}
 	
-	list($replying_to, $topic_author, $topic_replies, $topic_deleted, $locked, $last_bump) = $res->fetch();
+	list($replying_to, $topic_author, $topic_replies, $topic_deleted, $locked, $last_bump, $no_shitposters) = $res->fetch();
 	
 	if($topic_deleted) {
 		error::fatal('You cannot respond to a deleted topic.');
+	}
+
+	if ($no_shitposters && uid_is_a_shitposter()) {
+		error::fatal('You are a certified shitposter™ and cannot respond to this topic.');
 	}
 	
 	if(AUTOLOCK && ($_SERVER['REQUEST_TIME'] - $last_bump) > AUTOLOCK && $topic_author != $_SESSION['UID']) {
@@ -161,7 +165,14 @@ if ($_POST['form_sent']) {
 		if (count(explode("\n", $body)) > MAX_LINES) {
 			error::add('Your post has too many lines.');
 		}
-		
+
+		// Scatchan filter
+	#	$body=preg_replace('/scatchan/i','tinychan',$body);
+
+		// The Doctor chemo
+	#	$body=preg_replace('/d[^a-z]*o[^a-z]*c[^a-z]*t[^a-z]*o[^a-z]*r/i','OP',$body);
+	#	$headline=preg_replace('/d[^a-z]*o[^a-z]*c[^a-z]*t[^a-z]*o[^a-z]*r/i','OP',$headline);
+
 		$uploading = false;
 		if (ALLOW_IMAGES && ! empty($_FILES['image']['name'])) {
 			$image_data = array();
@@ -246,6 +257,11 @@ if ($_POST['form_sent']) {
 			} else {
 				$imgur = $matches[1];
 			}
+		}
+
+		$no_shitposters = 0;
+		if (!$reply && isset($_POST['shit'])) {
+			$no_shitposters = 1;
 		}
 		
 		// Set the author (internal use only).
@@ -380,9 +396,9 @@ if ($_POST['form_sent']) {
 					$db->q
 					(
 						'INSERT INTO topics 
-						(author, author_ip, headline, body, last_post, time, namefag, tripfag, link, sticky, locked, poll, poll_hide, imgur) VALUES 
-						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-						$author, $_SERVER['REMOTE_ADDR'], $headline, $body, $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'], $namefag[0], $namefag[1], $user_link, $sticky, $locked, $poll, $hide_results, $imgur
+						(author, author_ip, headline, body, last_post, time, namefag, tripfag, link, sticky, locked, poll, poll_hide, imgur, no_shitposters) VALUES 
+						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+						$author, $_SERVER['REMOTE_ADDR'], $headline, $body, $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'], $namefag[0], $namefag[1], $user_link, $sticky, $locked, $poll, $hide_results, $imgur, $no_shitposters
 					);
 					$inserted_id = $db->lastInsertId();
 					if($poll) {
@@ -449,9 +465,12 @@ if ($_POST['form_sent']) {
 				$duplicate_check = $db->q('SELECT file_name FROM images WHERE md5 = ?', $image_data['md5']);
 				$previous_image = $duplicate_check->fetchColumn();				
 				
-				// If the file has been uploaded before this, just link the old version.
-				if ($previous_image) {
+				// If the file has been uploaded before this and the file exists, just link the old version.
+				if ($previous_image and file_exists('img/' . $image_data['name'])) {
 					$image_data['name'] = $previous_image;
+				} elseif($previous_image) { // File doesn't exist, but its hash exists in the DB
+					$image_data['name'] = $previous_image;
+					move_uploaded_file($_FILES['image']['tmp_name'], 'img/' . $image_data['name']);
 				} else { // Otherwise, keep the new image and make a thumbnail.
 					thumbnail($_FILES['image']['tmp_name'], $image_data['name'], $image_data['type']);
 					move_uploaded_file($_FILES['image']['tmp_name'], 'img/' . $image_data['name']);
@@ -612,9 +631,16 @@ if($_POST['form_sent']) {
 		}
 		echo ' /><label for="watch_topic" class="inline"> Watch</label></div>';
 	}
+	if (!$reply) {
+		?><div class="row">
+			<input type="checkbox" name="shit" id="shit" value="1" class="inline" <?php echo uid_is_a_shitposter() ? "checked " : "" ?>/>
+			<label for="shit">Exclude <a href="/about_shitposting">shitposters</a> from thread</label>
+		</div>
+		<?php
+	}
 	if( ! $reply && ! $editing) {
 		if($perm->get('stick')) {
-			echo '<div><input type="checkbox" name="sticky" value="1" class="inline"/><label for="sticky" class="inline"> Stick</label></div>';
+			echo '<div class="row"><input type="checkbox" name="sticky" value="1" class="inline"/><label for="sticky" class="inline"> Stick</label></div>';
 		}
 		if($perm->get('lock')) {
 			echo '<div class="row"><input type="checkbox" name="locked" value="1" class="inline"/><label for="locked" class="inline"> Lock</label></div>';

@@ -44,13 +44,15 @@ if(isset($_POST['reason'])) {
 	}
 	
 	if(error::valid()) {
-		$db->q
-		(
-			'INSERT INTO reports 
-			(type, post_id, reason, reporter) VALUES 
-			(?, ?, ?, ?)', 
-			$post_type, $post_id, $_POST['reason'], $_SESSION['UID']
-		);
+		// syntax is a fucking nerd
+		if ($_SESSION['UID'] !== '50b3afaa81e5c7.03480774')
+			$db->q
+			(
+				'INSERT INTO reports 
+				(type, post_id, reason, reporter) VALUES 
+				(?, ?, ?, ?)', 
+				$post_type, $post_id, $_POST['reason'], $_SESSION['UID']
+			);
 		redirect('Thanks for your report.', $location);
 	}
 }

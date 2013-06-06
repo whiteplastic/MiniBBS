@@ -1,0 +1,85 @@
+@import url("Tinychan.css");
+
+body {
+	background-color: #e3e9f0;
+	background-image: url("/wheres_my_toothbrush.png");
+	background-repeat: no-repeat;
+	background-position: bottom center;
+	background-attachment: fixed;
+	font-family: arial, sans-serif;
+}
+
+h1#logo {
+	display: none;
+}
+
+a {
+	color: #000;
+}
+
+div#notice {
+	border: 2px solid #bfd1df;
+	background-color: #f9f9f9;
+}
+
+h3 {
+	background-color: #bfd1df;
+}
+
+div.body {
+	background-color: rgb(249,249,249); /* fallback */
+	background-color: rgba(249,249,249,.5);
+}
+
+div.body a {
+	color: #c00;
+}
+
+.quote {
+	color: #3c6d8a;
+}
+
+.border {
+	background-color: #e3e9f0;
+	border:3px dashed #bfd1df;
+}
+
+.highlighted {
+	background-color: #e3e9f0;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="file"]:focus,
+textarea:focus {
+	background-color: #fff6d1;
+}
+
+ul#main_menu {
+	background-color: #bfd1df;
+	font-size: 12px;
+}
+
+ul#main_menu * {
+	font-size: 12px;
+}
+
+table th {
+	background-color: #bfd1df;
+}
+
+table td {
+	background-color: #f9f9f9;
+}
+
+table tr.odd td {
+	background-color: #f0f0f0;
+}
+
+table tr:hover td {
+	background-color: #bfd1df;
+}
+
+#last_seen_marker {
+	border-top: 2px solid #bfd1df;
+}

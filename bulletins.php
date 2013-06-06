@@ -14,27 +14,29 @@ if($perm->get('bulletin')):
 ?>
 <ul class="menu">
 	<li><a href="<?php echo DIR ?>new_bulletin">New bulletin</a></li>
+	<li><a href="<?php echo DIR ?>about_bulletins">About</a></li>
 </ul>
 <?php
 endif;
 
 $columns = array
 (
-	'Author',
 	'Message',
+	'Author',
 	'Age ▼'
 );
 if($perm->get('delete')) {
 	$columns[] = 'Delete';
 }
-$table = new Table($columns, 1);
+$table = new Table($columns, 0);
 
 $res = $db->q('SELECT id, message, time, author, name, trip FROM bulletins ORDER BY id DESC LIMIT '.$page->offset.', '.$page->limit);
 while($bulletin = $res->fetchObject()) {	
 	$values = array
 	(
-		format_name($bulletin->name, $bulletin->trip, $perm->get('link', $bulletin->author)),
 		parser::parse($bulletin->message),
+//		format_name($bulletin->name, $bulletin->trip, $perm->get('link', $bulletin->author)),
+		($h = $perm->get('link', $bulletin->author)) ? format_name($bulletin->name, $bulletin->trip, $h) : "?",
 		'<span class="help" title="'.format_date($bulletin->time).'">' . age($bulletin->time) . '</span>'
 	);
 	if($perm->get('delete')) {

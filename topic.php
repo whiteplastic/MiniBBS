@@ -27,11 +27,13 @@ $res = $db->exec();
 
 if( ! $topic = $res->fetchObject()) {
 	$template->title = 'Non-existent topic';
+	header('HTTP/1.0 404 Not Found', true);
 	error::fatal('There is no such topic. It may have been deleted.');
 }
 
 if($topic->deleted && $topic->author != $_SESSION['UID'] && ! $perm->get('undelete')) {
 	$template->title = 'Deleted topic';
+	header('HTTP/1.0 404 Not Found', true);
 	error::fatal('This topic was deleted.');
 }
 
@@ -85,7 +87,7 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 <?php
 	if($topic->imgur):
 ?>
-	<a href="http://i.imgur.com/<?php echo htmlspecialchars($topic->imgur) ?>.jpg" class="thickbox">
+	<a href="http://i.imgur.com/<?php echo htmlspecialchars($topic->imgur) ?>.jpg" class="thickbox" target="_blank">
 		<img src="http://i.imgur.com/<?php echo htmlspecialchars($topic->imgur) ?>m.jpg" alt="" class="help" title="Externally hosted image" />
 	</a>
 <?php
@@ -96,8 +98,8 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 <?php
 	elseif($topic->file_name):
 ?>
-	<a href="<?php echo DIR ?>img/<?php echo htmlspecialchars($topic->file_name) ?>" class="thickbox">
-		<img src="<?php echo DIR ?>thumbs/<?php echo htmlspecialchars($topic->file_name) ?>" alt=""<?php if(!empty($topic->original_name)) echo ' class="help" title="'.htmlspecialchars($topic->original_name).'"' ?> />
+	<a href="<?php echo IMG_URI ?>img/<?php echo htmlspecialchars($topic->file_name) ?>" class="thickbox" target="_blank">
+		<img src="<?php echo IMG_URI ?>thumbs/<?php echo htmlspecialchars($topic->file_name) ?>" alt=""<?php if(!empty($topic->original_name)) echo ' class="help" title="'.htmlspecialchars($topic->original_name).'"' ?> />
 	</a>
 <?php
 	endif;
@@ -304,6 +306,11 @@ $previous_post_time = $topic->time;
 $previous_author = $topic->author;
 
 while( $reply = $replies->fetchObject() ) {
+	if (!MOBILE_MODE && (!isset($_SESSION) || $_SESSION['post_count'] < 100) && $reply_count == 0) {
+?>
+		<div class="topicad"><center><?php echo file_get_contents(AD_FILE) ?></center></div>
+<?php
+	}
 	/* Store information about this reply. */
 	$joined_in = ! isset($posters[$reply->author]);
 	if($joined_in) {
@@ -463,20 +470,20 @@ while( $reply = $replies->fetchObject() ) {
 		echo ' <a href="'.DIR.'topic/' . (int) $_GET['id'] . page($topic->replies, $history[$merges[$reply->original_parent]]['post_number']) . '#reply_'.$merges[$reply->original_parent].'" class="merge_marker help" title="'.$merge_tooltip.'" onclick="highlightReply('.$merges[$reply->original_parent].')">⧒</a>';
 	}
 	
-	echo '<span class="reply_id unimportant"><a href="#top">[^]</a> <a href="#bottom">[v]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
+	echo '<span class="reply_id unimportant"><a href="#top">[T]</a> <a href="#bottom">[B]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
 	'<div class="body poster_body_'.$posters[$reply->author]['number'].'" id="reply_box_' . $reply->id . '">';
 
 	if($reply->imgur) {
-		echo '<a href="http://i.imgur.com/' . htmlspecialchars($reply->imgur) . '.jpg" class="thickbox">',
+		echo '<a href="http://i.imgur.com/' . htmlspecialchars($reply->imgur) . '.jpg" class="thickbox" target="_blank" />',
 		'<img src="http://i.imgur.com/' . htmlspecialchars($reply->imgur) . 'm.jpg" alt="" class="help" title="Externally hosted image" />',
 		'</a>';
 	}
 	else if(is_ignored($reply->md5)) {
 		$image_ignored = true;
-		echo '<div class="unimportant hidden_image">(<strong><a href="' . DIR . 'img/' . htmlspecialchars($reply->file_name) . '">' . htmlspecialchars($reply->original_name) . '</a></strong> hidden.)</div>';
+		echo '<div class="unimportant hidden_image">(<strong><a href="' . IMG_URI . 'img/' . htmlspecialchars($reply->file_name) . '">' . htmlspecialchars($reply->original_name) . '</a></strong> hidden.)</div>';
 	}
 	else if ($reply->file_name) {
-		echo '<a href="'.DIR.'img/' . htmlspecialchars($reply->file_name) . '" class="thickbox"><img src="'.DIR.'thumbs/' . htmlspecialchars($reply->file_name) . '" alt=""';
+		echo '<a href="'.IMG_URI.'img/' . htmlspecialchars($reply->file_name) . '" class="thickbox" target="_blank"><img src="'.IMG_URI.'thumbs/' . htmlspecialchars($reply->file_name) . '" alt=""';
 		if( ! empty($reply->original_name)) {
 			echo ' class="help" title="'.htmlspecialchars($reply->original_name).'"';
 		}
@@ -564,7 +571,7 @@ if ($last_read_post !== $topic->replies && isset($_SESSION['UID'])) {
 topic_pages($topic->replies);
 
 if( (! $topic->locked || $perm->get('lock')) && ! $topic->deleted) {
-	echo '<ul class="menu"><li><a href="'.DIR.'new_reply/'.(int)$topic_id.'" onclick="$(\'#quick_reply\').toggle();$(\'#qr_text\').get(0).scrollIntoView(true);$(\'#qr_text\').focus(); return false;">Reply</a>' . ($topic->locked ? ' <small>(locked)</small>' : '') .  '</li></ul>';
+	echo '<ul class="menu"><li><a href="'.DIR.'new_reply/'.(int)$topic_id.'" onclick="$(\'#quick_reply\').toggle();$(\'#qr_text\').get(0).scrollIntoView(true);$(\'#qr_text\').focus(); return false;">Reply</a>' . ($topic->locked ? ' <small>(locked)</small>' : '') .  '</li><li style="float:right;font-size:x-small"><a href="#top">[Top]</a></li></ul>';
 } else if($topic->deleted) {
 	echo '<ul class="menu"><li>Topic deleted</li></ul>';
 } else {
@@ -592,7 +599,7 @@ endif;
 		</div>
 
 		<textarea class="inline" name="body" id="qr_text" rows="6" cols="55" tabindex="3"></textarea>
-		<div class="unimportant" id="syntax_link"><a href="<?php echo DIR ?>markup_syntax" target="_blank">markup syntax</a></div>
+		<div class="unimportant" id="syntax_link"><a href="<?php echo DIR ?>markup_syntax">markup syntax</a></div>
 <?php
 if(ALLOW_IMAGES && $perm->get('post_image')):
 ?>

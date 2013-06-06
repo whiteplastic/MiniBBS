@@ -9,17 +9,18 @@ body {
 #notice {
 	padding:.5em;
 }
-
+/*
 #header {
 	margin:0 0 1em;
 	padding:7px 0 7px 10px;
 	border-radius:0 0 5px 5px;
 }
 
-	#header a {
+*/
+	#logo a {
 		text-decoration:none;
 	}
-
+/*
 	#header input[type=submit] {
 		display:none;
 	}
@@ -37,7 +38,7 @@ body {
 	#header input:hover, #header input:focus {
 		background-color:#fff;
 	}
-
+*/
 	h1 {
 		font-size:17px;
 	}
@@ -47,29 +48,19 @@ body {
 	}
 
 	ul#main_menu {
-		padding: 0;
-		padding-right:3px;
 		margin:0;
-		margin-top: 2px;
-		float:right;
-	}
-
-	ul#main_menu li, ul#main_menu li ul li {
-		float: left;
-		position: relative;
+		padding: 0.5em;
 	}
 
 	ul#main_menu li#menu_history:last-child {
-		padding-left:.7em;
 	}
 
 	li ul {
 		display: none;
-		position: absolute;
-		right:0;
+		position: relative;
 		padding:0;
 		padding:.7em 1.2em;
-		border-radius:2px;
+/*		border-radius:2px; */
 	}
 	
 	
@@ -84,12 +75,13 @@ body {
 		margin:0!important;
 		margin-top:6px!important;
 	}
-
+/*
 h3, .body, #header, li ul {
 	box-shadow:0px 1px 3px rgba(0,0,0,0.35);
 	-moz-box-shadow:0px 1px 3px rgba(0,0,0,0.35);
 	-webkit-box-shadow:0px 1px 3px rgba(0,0,0,0.35);
 }
+*/
 
 h2 {
 	font-size:16px;
@@ -104,14 +96,14 @@ h3 {
 	font-weight:400;
 	margin:.7em 0 0;
 	padding:.5em;
-	border-radius:4px 4px 0 0;
+	/*border-radius:4px 4px 0 0;*/
 	overflow:auto;
 }
 
 	h3.repeat_post {
 		margin:0;
 		margin-top:-.2em;
-		border-radius:0;
+/*		border-radius:0;*/
 	}
 	
 form#poll {
@@ -134,7 +126,7 @@ form#poll {
 .topic_page a {
 	text-decoration:none;
 	border:1px solid;
-	border-radius:3px;
+/*	border-radius:3px; */
 	padding:1px 3px;
 }
 
@@ -163,7 +155,7 @@ form#poll {
 	padding-bottom:.7em;
 	white-space:normal;
 	word-wrap:break-word;
-	border-radius:0 0 4px 4px;
+/*	border-radius:0 0 4px 4px;*/
 }
 
 	.body img {
@@ -468,4 +460,9 @@ h3#preview,h3#error,h3#replying_to,label,legend,.topic_headline a,.reply_body_sn
 .undo {
 	font-size:80%;
 	float:right;
+}
+
+h1#logo {
+	display: block;
+	text-align: center;
 }

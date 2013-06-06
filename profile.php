@@ -113,6 +113,15 @@ if ($banned) {
 		<input type="submit" value="<?php echo ($banned) ? 'Update ban length' : 'Ban' ?>" class="inline" />
 	</div>
 </form>
+
+<form action="<?php echo DIR ?>shit_update.php" method="post">
+	<?php csrf_token(); $shitposter = uid_is_a_shitposter($_GET['UID']); ?>
+	<div class="row">
+		This UID is <?php if(!$shitposter): ?><strong>not</strong><?php endif; ?> a <a href="/about_shitposters">shitposter</a>.
+		<input type="submit" value="<?php echo $shitposter ? 'Remove shitposter flag' : 'Add shitposter flag' ?>" class="inline">
+	</div>
+</form>
+
 <?php
 // Menu
 echo '<ul class="menu"><li><a href="'.DIR.'compose_message/' . $_GET['uid'] . '">Send PM</a>';
@@ -124,6 +133,7 @@ echo '<li><a href="'.DIR.'delete_all_PMs/' . $_GET['uid'] . '" onclick="return q
 if($perm->get('manage_permissions')) {
 	echo '<li><a href="'.DIR.'manage_permissions/'.$_GET['uid'].'">Manage permissions</a></li>';
 }
+echo '<li><a href="'.DIR.'spam_user.php?id=' . $_GET['uid'] . '" onclick="return quickAction(this, \'Really send PM spam to this user?\');">Send PM spam</a></li>';
 echo '</ul>',
 '<form action="" method="post" id="mass_delete">';
 csrf_token();

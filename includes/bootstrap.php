@@ -10,6 +10,9 @@ if( ! file_exists(SITE_ROOT . '/includes/config.php')) {
 require SITE_ROOT . '/includes/config.php';
 require SITE_ROOT . '/includes/functions.php';
 
+require SITE_ROOT . '/includes/lib/Twig/Autoloader.php';
+Twig_Autoloader::register();
+
 /* Lazy load classes */
 spl_autoload_register('load_class');
 
@@ -32,7 +35,7 @@ foreach($config as $name => $value) {
 unset($config);
 
 /* If the calling file defines MINIMAL_BOOTSTRAP as true, we'll skip a few checks. */
-defined(MINIMAL_BOOTSTRAP) or define('MINIMAL_BOOTSTRAP', false);
+defined('MINIMAL_BOOTSTRAP') or define('MINIMAL_BOOTSTRAP', false);
 
 /* Initialize the environment */
 if( ! MINIMAL_BOOTSTRAP) {
@@ -54,10 +57,10 @@ if(get_magic_quotes_gpc()) {
 }
 
 /* Are we using the hostname defined in config? */
-if(HOSTNAME != getenv('HTTP_HOST')) {
-	header('Location: ' . URL);
-	exit();
-}
+#if(HOSTNAME != getenv('HTTP_HOST')) {
+#	header('Location: ' . URL);
+#	exit();
+#}
 
 /* Fetch DEFCON setting. */
 $defcon = cache::fetch('defcon');
@@ -70,7 +73,13 @@ define('DEFCON', $defcon);
 
 /* If necessary, assign the client a new ID. */
 if(empty($_COOKIE['UID']) && ! $perm->is_banned($_SERVER['REMOTE_ADDR'])) {
-	create_id();
+	if (isset($_SERVER['HTTP_REFERER']) && preg_match('/pa?edo|loli|shota|\btor\b/i', $_SERVER['HTTP_REFERER'])) {
+		header('Location: http://goatse.in/?u=frankusrs');
+		header('Status: 302 Found');
+		exit;
+	} else {
+		create_id();
+	}
 } else if( ! empty($_COOKIE['password']) && ! isset($_SESSION['ID_activated'])) {
 	/* Log in those who have just began their session. */
 	if( ! activate_id($_COOKIE['UID'], $_COOKIE['password'])) {
@@ -90,6 +99,8 @@ $perm->set_group();
 if(DEFCON < 2 && ! $perm->is_admin()) {
 	exit('<p>The board is currently in lockdown mode. Come back soon.</p>');
 }
+
+$notifications = array();
 
 /* None of the following block is necessary for new visitors. */
 if($_SESSION['ID_activated'] && ! MINIMAL_BOOTSTRAP) {

@@ -1,4 +1,6 @@
 <?php
+include_once (SITE_ROOT . '/includes/geshi/geshi.php');
+
 /* The parser and related methods. Accessed statically. */
 class parser {
 	/* Wiki-style mark-up and BBCode */
@@ -35,7 +37,17 @@ class parser {
 		// 13 Monospace.
 		'/\[code\](.+?)\[\/code\]/ms',
 		// 14 Shift-JIS
-		'/\[aa\](.+?)\[\/aa\]/ms'
+		'/\[aa\](.+?)\[\/aa\]/ms',
+		// 15 ANSI
+		'/\[ansi\](.+?)\[\/ansi\]/ms',
+		// 16 Colour
+		'/\[(colou?r)=([#a-z0-9]+)\](.+?)\[\/\1\]/',
+		// 17 Colour with background
+		'/\[(colou?r)=([#a-z0-9]+)(?:,([#a-z0-9]+))?\](.+?)\[\/\1\]/',
+		// 18 Superscript
+		'/\[sup\](.+?)\[\/sup\]/',
+		// 19 Subscript
+		'/\[sub\](.+?)\[\/sub\]/',
 	);
 	
 	/* HTML to replace the $markup */
@@ -57,8 +69,25 @@ class parser {
 		'—', #11
 		'<span class="highlight">$1</span>', #12
 		'<pre style="display:inline">$1</pre>', #13
-		'<pre class="shift_jis">$1</pre>' #14
+		'<pre class="shift_jis">$1</pre>', #14
+		'<pre class="ansi">$1</pre>', #15
+		'<span style="color:$2">$3</span>', # 16
+		'<span style="color:$2;background:$3">$4</span>', # 17
+		'<sup>$1</sup>', # 18
+		'<sub>$1</sub>', # 19
 	);
+
+	/* Code boxes for programming language formatting. */
+	private static $langs = array (
+		'bash',
+		'c',
+		'c++',
+		'java',
+		'javascript',
+		'lisp'
+		// 'php'
+	);
+ 
 
 	/* Converts user input to HTML */
 	public static function parse($text) {
@@ -85,6 +114,15 @@ class parser {
 		
 		/* Replace mark-up with HTML */
 		$text = preg_replace(self::$markup, self::$replacements, $text);
+		
+		/* Parse code blocks. Added by phallus99 Dec 23, 2011. */
+		foreach (self::$langs as $key => $lang) {
+			if (strpos ($text, '[' . $lang . ']') !== false) {
+				/* Create an anonymous function to properly parse the language. */
+				$gparse = create_function ('$text', '$geshi = new GeSHi (trim (htmlspecialchars_decode ($text[1])), "' . $lang . '"); return "<div class=\"php\">" . $geshi->parse_code (). "</div>";');
+				$text = preg_replace_callback ('|\[' . preg_quote ($lang) . '\](.+?)\[/' . preg_quote ($lang) . '\]|ms', $gparse, $text);
+			}
+		}
 		
 		/* Restore [noparse] content */
 		if( ! empty($noparse_blocks)) {

@@ -6,6 +6,10 @@ $template->title = 'Statistics';
 
 $res = $db->q('SELECT count(*) FROM topics WHERE deleted = 0');
 $num_topics = $res->fetchColumn();
+$res = $db->q('SELECT (SELECT count(*) FROM replies WHERE time>UNIX_TIMESTAMP()-86400) + (SELECT count(*) FROM topics WHERE time>UNIX_TIMESTAMP()-86400);');
+$posts_24_hours = $res->fetchColumn();
+$res = $db->q('SELECT (SELECT count(*) FROM replies WHERE time>UNIX_TIMESTAMP()-86400*30) + (SELECT count(*) FROM topics WHERE time>UNIX_TIMESTAMP()-86400*30);');
+$posts_1_month = $res->fetchColumn();
 $res = $db->q('SELECT count(*) FROM replies WHERE deleted = 0');
 $num_replies = $res->fetchColumn();
 $res = $db->q('SELECT count(*) FROM topics WHERE author = ? AND deleted = 0', $_SESSION['UID']);
@@ -51,6 +55,16 @@ $your_posts_per_day = round($your_posts / $days_since_first_visit, 2);
 	<tr class="odd">
 		<th class="minimal">Total existing posts</th>
 		<td class="minimal"><?php echo format_number($total_posts) ?></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th class="minimal">Posts within the last 24 hours</th>
+		<td class="minimal">~<?php echo format_number($posts_24_hours) ?></td>
+		<td></td>
+	</tr>
+	<tr class="odd">
+		<th class="minimal">Posts within the last month</th>
+		<td class="minimal">~<?php echo format_number($posts_1_month) ?></td>
 		<td></td>
 	</tr>
 	<tr>

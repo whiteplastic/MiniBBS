@@ -17,7 +17,7 @@ function check_user_agent($type) {
 	$user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
 	if($type == 'bot') {
 		// Matches popular bots
-		if(preg_match('/googlebot|adsbot|yahooseeker|yahoobot|bingbot|watchmouse|pingdom\.com|feedfetcher-google/', $user_agent)) {
+		if(preg_match('/googlebot|adsbot|yahooseeker|yahoobot|msnbot|bingbot|watchmouse|pingdom\.com|feedfetcher-google|Baiduspider/', $user_agent)) {
 			return true;
 		}
 	} else if($type == 'mobile') {
@@ -71,9 +71,39 @@ function tripcode($name_input) {
 	return array($name, $trip);
 }
 
+// stolen (partially) from Tinyboard
+function checkdnsbl() {
+	global $dnsbl;
+	
+	$ip = ReverseIPOctets($_SERVER['REMOTE_ADDR']);
+	
+	foreach($dnsbl as $blacklist) {
+		$lookup = $ip . '.' . $blacklist;
+		$host = gethostbyname($lookup);
+		if($host != $lookup) {
+			// On NXDOMAIN (meaning it's not in the blacklist), gethostbyname() returns the host unchanged.
+			if(preg_match('/^127\.0\.0\./', $host) && $host != '127.0.0.10')
+				return $blacklist;
+		}
+	}
+	
+	return false;
+}
+
+function ReverseIPOctets($ip) {
+	$ipoc = explode('.', $ip);
+	return $ipoc[3] . '.' . $ipoc[2] . '.' . $ipoc[1] . '.' . $ipoc[0];
+}
+
 function create_id() {
 	global $db;
 	if(DEFCON < 5 || check_user_agent('bot')) {
+		return false;
+	}
+
+	if($blacklist = checkdnsbl()) {
+		$_SESSION['notice'] = 'Sorry, your IP address ('. $_SERVER['REMOTE_ADDR'] . ') is listed in ' . $blacklist . ', so you cannot create IDs.';
+
 		return false;
 	}
 
@@ -123,8 +153,8 @@ function activate_id($uid, $password) {
 		return true;
 	}
 	
-	$res = $db->q('SELECT password, first_seen, topic_visits, namefag, post_count FROM users WHERE uid = ?', $uid);
-	list($db_password, $first_seen, $topic_visits, $name, $post_count) = $res->fetch();
+	$res = $db->q('SELECT password, first_seen, topic_visits, namefag FROM users WHERE uid = ?', $uid);
+	list($db_password, $first_seen, $topic_visits, $name) = $res->fetch();
 	
 	if( ! empty($db_password) && $password === $db_password) {
 		// The password is correct!
@@ -137,7 +167,12 @@ function activate_id($uid, $password) {
 		$_SESSION['poster_name'] = $name;
 		// Turn topic visits into an array
 		$_SESSION['topic_visits'] = json_decode($topic_visits, true);
-		$_SESSION['post_count'] = $post_count;
+		// Get post count
+		$res = $db->q("SELECT COUNT(*) FROM replies WHERE author = ? AND deleted = '0'", $_SESSION['UID']);
+		$num_topics = $res->fetchColumn();
+		$res = $db->q("SELECT COUNT(*) FROM topics WHERE author = ? AND deleted = '0'", $_SESSION['UID']);
+		$num_replies = $res->fetchColumn();
+		$_SESSION['post_count'] = $num_topics + $num_replies;
 		
 		// Set cookie
 		if($_COOKIE['UID'] !== $_SESSION['UID']) {
@@ -167,6 +202,9 @@ function force_id() {
 		$is_whitelisted = $res->fetchColumn();
 		if( ! $is_whitelisted) {
 			if(check_proxy($_SERVER['REMOTE_ADDR'])) {
+				if (defined('NO_WHITELIST') && NO_WHITELIST)
+					error::fatal('Get lost, please.');
+
 				if( show_captcha('You appear to be using a proxy ('.htmlspecialchars($_SERVER['REMOTE_ADDR']).'). Please fill in the following CAPTCHA to whitelist your UID and continue. (If you already have a whitelisted UID, <a href="'.DIR.'restore_ID">restore it</a>.)') ) {
 					$_SESSION['IP_checked'] = true;
 					$db->q('INSERT INTO whitelist (uid) VALUES (?)', $_SESSION['UID']);
@@ -377,6 +415,11 @@ function format_name($name, $tripcode, $link = null, $poster_number = null) {
 		$formatted_name = '<strong>' . htmlspecialchars(trim($name)) . '</strong>';
 		if( ! empty($link)) {
 			$formatted_name = '<a href="' . DIR . htmlspecialchars($link) . '">' . $formatted_name . '</a>';
+			if ($link === 'admin' && $name === 'Frank Usrs') {
+				$formatted_name .= ' <img src="/png/il.png" alt="✡" title="✡">';
+			} elseif ($link === 'mod' && substr($name, 0, 5) === 'Fuchs') {
+				$formatted_name .= ' <img src="/png/de.png" alt="卐" title="卐">';
+			}
 		}
 		$formatted_name .= ' ' . $tripcode;
 	}
@@ -519,7 +562,7 @@ function redirect($notice = null, $location = null) {
 		$_SESSION['redirected_by_ajax'] = true;
 	}
 	
-	header('Location: ' . URL . $location);
+	header('Location: /' . $location);
 	exit;
 }
 
@@ -706,8 +749,8 @@ function delete_image($mode = 'reply', $post_id) {
 			if(file_exists('thumbs/'.$img_filename)) {
 				unlink('thumbs/'.$img_filename);
 			}
+			$db->q('DELETE FROM images WHERE '.$mode.'_id = ? AND file_name = ? LIMIT 1', $post_id, $img_filename);
 		}
-		$db->q('DELETE FROM images WHERE '.$mode.'_id = ? AND file_name = ? LIMIT 1', $post_id, $img_filename);
 	}
 }
 
@@ -752,13 +795,7 @@ function log_mod($action, $target, $param = '', $reason = '') {
 		case 'cms_new':
 		case 'cms_edit':
 		case 'delete_page':
-		case 'undelete_page':
 			$type = 'cms';
-		break;
-		
-		case 'merge':
-		case 'unmerge':
-			$type = 'merge';
 		break;
 		
 		default:
@@ -775,7 +812,7 @@ function log_mod($action, $target, $param = '', $reason = '') {
 }
 
 /* Sends a PM from the board. */
-function system_message($uid, $message) {
+function system_message($uid, $message, $advert = false) {
 	global $db;
 
 	$db->q
@@ -783,7 +820,7 @@ function system_message($uid, $message) {
 			'INSERT INTO private_messages 
 			(source, destination, contents, parent, time) VALUES 
 			(?, ?, ?, ?, ?)',
-			'system', $uid, $message, '0', $_SERVER['REQUEST_TIME']
+			($advert ? 'advert' : 'system'), $uid, $message, '0', $_SERVER['REQUEST_TIME']
 	);
 	if($new_id = $db->lastInsertId()) {
 		$db->q('UPDATE private_messages SET parent = ? WHERE id = ?', $new_id, $new_id);
@@ -803,4 +840,29 @@ function get_styles() {
 	}
 	return $styles;
 }
-?>
+
+function uid_is_a_shitposter($uid = null) {
+	return false;
+	global $db;
+
+	if ($uid === null) {
+		$uid = $_SESSION['UID'];
+	}
+
+	$h = $db->q('SELECT shitposter FROM users WHERE uid=?', $uid);
+	list($is_shit) = $h->fetch();
+
+	return (bool)$is_shit;
+}
+
+/* Load Twig. */
+function load_twig() {
+	global $twig;
+
+	$loader = new Twig_Loader_Filesystem(SITE_ROOT . '/includes/templates');
+	$twig = new Twig_Environment($loader, array(
+		'cache' => SITE_ROOT . '/cache/twig/',
+	));
+
+	$twig->addFunction('number', new Twig_Function_Function('format_number'));
+}

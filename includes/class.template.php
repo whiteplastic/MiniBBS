@@ -179,39 +179,39 @@ class Template {
 		global $last_actions, $notifications;
 		
 		switch($path) {
-			case 'bumps':
-			case 'topics':
-			case 'bulletins':
-				$cookie_name = 'last_' . rtrim($path, 's');
-				if(isset($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] < $last_actions[$cookie_name]) {
-					$text = '<span class="new_items">' . $text . '<em>!</em></span>';
-				}
-			break;
-			
-			case 'history':
-				if($notifications['citations']) {
-					$text = '<span class="new_items">' . $text . ' <em><a href="'.DIR.'citations" class="help" title="'.$notifications['citations'].' new repl' . ($notifications['citations'] > 1 ? 'ies' : 'y') . ' to your replies">('.number_format($notifications['citations']).')</a></em></span>';
-				}
-			break;
-			
-			case 'watchlist':
-				if($notifications['watchlist']) {
-					$text = '<span class="new_items">' . $text . ' <em>('.number_format($notifications['watchlist']).')</em></span>';
-				}
-			break;
-			
-			case 'reports':
-				if($notifications['reports']) {
-					$text = '<span class="new_items">' . $text . ' <em>('.number_format($notifications['reports']).')</em></span>';
-				}
-			break;
-			
-			case 'private_messages':
-				if($notifications['pms']) {
-					$text = '<span class="new_items">' . $text . ' <em>('.number_format($notifications['pms']).')</em></span>';
-				}
-			break;
+		case 'bumps':
+		case 'topics':
+		case 'bulletins':
+			$cookie_name = 'last_'.substr($path, 0, -1);
+			if(isset($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] < $last_actions[$cookie_name]) {
+				$text = '<span class="new_items">' . $text . '<em>!</em></span>';
+			}
+		break;
+		
+		case 'history':
+			if($notifications['citations']) {
+				$text = '<span class="new_items">' . $text . ' <em><a href="'.DIR.'citations" class="help" title="'.$notifications['citations'].' new repl' . ($notifications['citations'] > 1 ? 'ies' : 'y') . ' to your replies">('.number_format($notifications['citations']).')</a></em></span>';
+			}
+		break;
+		
+		case 'watchlist':
+			if($notifications['watchlist']) {
+				$text = '<span class="new_items">' . $text . ' <em>('.number_format($notifications['watchlist']).')</em></span>';
+			}
+		break;
+		
+		case 'reports':
+			if($notifications['reports']) {
+				$text = '<span class="new_items">' . $text . ' <em>('.number_format($notifications['reports']).')</em></span>';
+			}
+		break;
+		
+		case 'private_messages':
+			if($notifications['pms']) {
+				$text = '<span class="new_items">' . $text . ' <em>('.number_format($notifications['pms']).')</em></span>';
+			}
 		}
+
 		return $text;
 	}
 }

@@ -10,6 +10,9 @@ class Table {
 	
 	/* The number of rows. (count() isn't used because we occasionally need to inflate this number) */
 	public $row_count = 0;
+
+	private $ad = null;
+	private $ad_pos;
 	
 	/**
 	 * CSS classes to be applied to every cell in a particular column number, as specified by the key.
@@ -57,6 +60,16 @@ class Table {
 		
 		$this->row_count++;
 	}
+
+	public function ad($ad, $placement = 10) {
+		if (isset($_SESSION) && $_SESSION['post_count'] > 100)
+			return;
+
+		if (file_exists($ad)) {
+			$this->ad = file_get_contents($ad);
+			$this->ad_placement = $placement;
+		}
+	}
 	
 	/* If we have any rows, build and output the table. Otherwise, display $no_rows_message. */
 	public function output($no_rows_message = '') {
@@ -80,6 +93,14 @@ class Table {
 	<tbody>
 <?php
 		foreach($this->rows as $key => $values):
+			/* ad code by Frank Usrs */
+			if ($this->ad && $key == $this->ad_placement)
+			#if ($this->ad && $key & 1)
+				echo
+				'<tr class="adrow"><td colspan="'
+					.count($this->columns).'"><center>'
+					.$this->ad
+				.'</center></td></tr>';
 ?>
 		<tr<?php if(isset($this->row_classes[$key])) echo ' class="'.implode(' ', $this->row_classes[$key]).'"' ?>>
 <?php

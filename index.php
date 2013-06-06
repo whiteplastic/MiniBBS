@@ -95,7 +95,7 @@ if( ! $_SESSION['settings']['spoiler_mode']) {
 $table = new Table($columns, 0);
 $table->add_td_class(0, 'topic_headline');
 $table->add_td_class(1, 'snippet');
-
+if(!MOBILE_MODE) $table->ad(AD_FILE, 10);
 $order_by = ($topics_mode) ? 'id' : 'last_post';
 
 $db->select('topics.id, topics.time, topics.replies, topics.visits, topics.headline, topics.body, topics.last_post, topics.locked, topics.sticky, topics.poll, topics.namefag, topics.tripfag')

@@ -40,6 +40,12 @@ $template->title = 'Stuff';
 	<li><a href="<?php echo DIR; ?>date_and_time">Date and time</a></li>
 	<li><a href="<?php echo DIR; ?>notepad">Notepad</a> — <span class="unimportant">Your personal notepad.</span></li>
 </ul>
+<ul class="stuff">
+	<li><a href="<?php echo DIR; ?>ICARE">ICARE</a> — <span class="unimportant">for people who care about being sane on the Internet.</span></li>
+	<li><a href="<?php echo DIR; ?>glossary">Glossary</a> — <span class="unimportant">when you are confused by the lingo.</span></li>
+	<li><a href="<?php echo DIR; ?>unserious_fraud_scam_companies_and_services">Unserious fraud/scam companies and services</a> — <span class="unimportant">Free advice on which Internet-related companies to stay away from.</span></li>
+	<li><a href="<?php echo DIR; ?>legal">Legal notices</a> — <span class="unimportant">For business associates, trolls, bigots and lawyers.</span></li>
+</ul>
 </div>
 
 
