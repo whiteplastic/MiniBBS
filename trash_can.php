@@ -1,17 +1,17 @@
 <?php
 require './includes/bootstrap.php';
 force_id();
-$template->title = 'Your trash can';
+$template->title = 'Papierkorb';
 update_activity('trash_can', 1);
 
 if ($_POST['empty_trash']) {
 	if( ! check_token()) {
-		error::fatal(m('Error: Invalid token'));
+		error::fatal(m('Falcher Token'));
 	}
 	$db->q('DELETE FROM trash WHERE uid = ?', $_SESSION['UID']);
-	$_SESSION['notice'] = 'Trash emptied.';
+	$_SESSION['notice'] = 'Papierkorb geleert.';
 }
-echo '<p>Your deleted topics and replies are archived here.</p>';
+echo '<p>Deine gelöschten Beiträge sind hier archiviert.</p>';
 
 $fetch_trash = $db->q
 (
@@ -24,15 +24,15 @@ $fetch_trash = $db->q
 
 $columns = array
 (
-	'Headline',
-	'Body',
-	'Age ▼'
+	'Titel',
+	'Inhalt',
+	'Alter ▼'
 );
 $table = new Table($columns, 1);
 
 while($trash = $fetch_trash->fetchObject()) {
 	if(empty($trash->headline)) {
-		$trash->headline = '<span class="unimportant"><a href="'.DIR.'topic/'.(int) $trash->parent_id.'#reply_'.(int) $trash->id.'">(Reply.)</a></span>';
+		$trash->headline = '<span class="unimportant"><a href="'.DIR.'topic/'.(int) $trash->parent_id.'#reply_'.(int) $trash->id.'">(Antwort.)</a></span>';
 	} else {
 		$trash->headline = '<a href="'.DIR.'topic/'.(int) $trash->id.'">' . htmlspecialchars($trash->headline) . '</a>';
 	}

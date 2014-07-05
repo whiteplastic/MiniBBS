@@ -4,7 +4,7 @@ force_id();
 $template->title = 'Ban user';
 
 if( ! $perm->get('ban')) {
-	error::fatal(m('Error: Access denied'));
+	error::fatal(m('Fehler: Zugriff verweigert'));
 }
 
 if ( ! empty($_POST['target'])) {
@@ -24,23 +24,23 @@ if ( ! empty($_POST['target'])) {
 	} else if (strtotime($_POST['length']) > $_SERVER['REQUEST_TIME']) {
 		$ban_expiry = strtotime($_POST['length']);
 	} else {
-		error::add('Invalid ban length.');
+		error::add('Ungültige Bannlänge');
 	}
 		
 	if($type == 'uid' && $perm->is_admin($target)) {
-		error::add('You cannot ban an administrator.');
+		error::add('Du kannst keinen Admin bannen.');
 	}
 	
 	if($type == 'cidr') {
 		list($subnet, $suffix) = explode('/', $target);
 		
 		if($suffix < 16) {
-			error::add('You cannot ban a CIDR suffix less than 16.');
+			error::add('Du kannst kein CIDR-Suffix unter 16 bannen.');
 		}
 	}
 	
 	if($type == 'wild' && ! preg_match('!^[0-9]+\.[0-9]+\.([0-9]+|\*)\.([0-9]+|\*)$!', $target)) {
-		error::add('Invalid wildcard format. The first two parts of the IP cannot be treated as wildcards. The last two parts can contain either an octet or a wildcard -- not both.');
+		error::add('Ungültiges Format. Du kannst nicht die ersten zwei Stellen einer IP bannen, die letzten zwei müssen eine Wildcard oder ein Oktett enthalten, nicht beides.');
 	}
 		
 	if(error::valid()) {
@@ -70,17 +70,17 @@ if ( ! empty($_POST['target'])) {
 		
 		/* Notify the affected user of their ban */
 		if(ALLOW_BAN_READING) {
-			$explanation = 'has been banned ';
+			$explanation = 'wurde';
 			if($ban_expiry == 0) {
-				$explanation .= 'indefinitely';
+				$explanation .= 'unbegrenzt gebannt';
 			} else {
-				$explanation .= 'for ' . age($ban_expiry);
+				$explanation .= 'für ' . age($ban_expiry) . 'gebannt';
 			}
-			$explanation .= ' by ' . $perm->get_name($_SESSION['UID']) . '. ';
+			$explanation .= ' von ' . $perm->get_name($_SESSION['UID']) . '. ';
 			if(empty($_POST['reason'])) {
-				$explanation .= 'No reason was given.';
+				$explanation .= 'Es wurde kein Grund angegeben.';
 			} else {
-				$explanation .= 'The following reason was given: ' . $_POST['reason'];
+				$explanation .= 'Der folgende Grund wurde angegeben: ' . $_POST['reason'];
 			}
 			
 			if($type == 'ip') {
@@ -88,9 +88,9 @@ if ( ! empty($_POST['target'])) {
 				$res = $db->q('SELECT author FROM replies WHERE author_ip = ? ORDER BY time DESC LIMIT 1', $target);
 				$latest_id = $res->fetchColumn();
 				
-				system_message($latest_id, 'Your IP address ('.$target.') ' . $explanation);
+				system_message($latest_id, 'Deine IP ('.$target.') ' . $explanation);
 			} else if($type == 'uid') {
-				system_message($target, 'Your UID ' . $explanation);
+				system_message($target, 'Deine UID ' . $explanation);
 			}
 		}
 		
@@ -102,7 +102,7 @@ if ( ! empty($_POST['target'])) {
 			$redirect = '';
 		}
 		
-		redirect($target . (isset($last_ip) ? ' and ' . $last_ip : '') . ' banned.', $redirect);
+		redirect($target . (isset($last_ip) ? ' und ' . $last_ip : '') . ' verbannt.', $redirect);
 	}
 
 	error::output();

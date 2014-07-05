@@ -25,12 +25,12 @@ $res = $db->q('SELECT id, page_title, content, markup FROM pages WHERE url = ? A
 $cms_page = $res->fetchObject();
 
 if ( ! $cms_page) {
-	redirect($error_message . ($perm->get('cms') ? ' (Want to <a href="'.DIR.'new_page">create it?</a>)' : ''), '');
+	redirect($error_message . ($perm->get('cms') ? ' (Willst du sie <a href="'.DIR.'new_page">erstellen?</a>)' : ''), '');
 }
 
 $template->title = $cms_page->page_title;
 if($perm->get('cms')) {
-	$template->title .= ' <sup>(<a href="' . DIR . 'edit_page/' . $cms_page->id . '" title="Edit this page">✎</a>)</sup>';
+	$template->title .= ' <sup>(<a href="' . DIR . 'edit_page/' . $cms_page->id . '" title="Seite bearbeiten">✎</a>)</sup>';
 }
 
 if($cms_page->markup) {

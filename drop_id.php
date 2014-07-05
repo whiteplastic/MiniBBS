@@ -1,18 +1,18 @@
 <?php
 require './includes/bootstrap.php';
-$template->title = 'Drop ID';
+$template->title = 'ID löschen';
 
 if($_POST['drop_ID'] && check_token()) {
 	session_destroy();
 	setcookie('UID', '', $_SERVER['REQUEST_TIME'] - 3600, '/');
 	setcookie('password', '', $_SERVER['REQUEST_TIME'] - 3600, '/');
-	redirect('Your ID has been dropped.', '');
+	redirect('Deine ID wurde gelöscht.', '');
 }
 ?>
-<p><em>Dropping</em> your ID will simply remove the UID, password, and mode cookies from your browser, effectively logging you out. If you want to keep your post history, settings, etc., <a href="<?php echo DIR; ?>back_up_ID">back up your ID</a> and/or <a href="<?php echo DIR; ?>dashboard">set a memorable password</a> before doing this.</p>
+<p><em>Das Löschen</em> deiner ID wird die UID, das Passwort und Cookies löschen, was dich ausloggt. Wenn du deine Daten behalten willst, solltest du deine <a href="<?php echo DIR; ?>back_up_ID">ID speichern</a> und/oder <a href="<?php echo DIR; ?>dashboard">ein Passwort setzen</a> bevor du das tust.</p>
 <form action="" method="post">
 	<?php csrf_token() ?>
-	<input type="submit" name="drop_ID" value="Drop my ID" />
+	<input type="submit" name="drop_ID" value="Meine ID löschen." />
 </form>
 <?php
 $template->render();

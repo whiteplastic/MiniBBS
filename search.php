@@ -2,13 +2,13 @@
 require './includes/bootstrap.php';
 
 if( ! empty($_POST['phrase'])) {
-	header('Location: ' . URL . 'search/' . urlencode($_POST['phrase']));
+	header('Ort: ' . URL . 'search/' . urlencode($_POST['phrase']));
 	exit;
 }
 
 force_id();
 update_activity('search');
-$template->title = 'Search';
+$template->title = 'Suche';
 $template->onload = 'focusId(\'phrase\'); init();';
 $page = new Paginate();
 
@@ -17,15 +17,15 @@ if( ! empty($_GET['q'])) {
 	
 	$res = $db->q('SELECT COUNT(*) FROM search_log WHERE ip_address = ? AND time > (? - 60)', $_SERVER['REMOTE_ADDR'], $_SERVER['REQUEST_TIME']);
 	if($res->fetchColumn() > RECAPTCHA_MAX_SEARCHES_PER_MIN) {
-		if(show_captcha('You\'re searching too quickly.')) {
+		if(show_captcha('Du suchst zu schnell.')) {
 			$db->q('DELETE FROM search_log WHERE ip_address = ?', $_SERVER['REMOTE_ADDR']);
 		}
 	}
 	
 	if ($search_query === '') {
-		error::add('Your must enter a search term.');
+		error::add('Gib einen Suchbegriff ein');
 	} else if(strlen($search_query) > 255) {
-		error::add('Your query must be shorter than 256 characters.');
+		error::add('Die Suchanfrage muss kürzer als 256 Zeichen sein.');
 	}
 
 	if(error::valid()) {
@@ -59,12 +59,12 @@ if( ! empty($_GET['q'])) {
 }
 
 ?>
-<p><?php echo m('Search: Help') ?></p>
+<p><?php echo m('Suche: Hilfe') ?></p>
 
 <form action="" method="post">
 	<div class="row">
 		<input id="phrase" name="phrase" type="text" size="80" maxlength="255" value="<?php echo htmlspecialchars($_GET['q']) ?>" class="inline" />
-		<input type="submit" value="Search" class="inline" />
+		<input type="submit" value="Suche" class="inline" />
 	</div>
 </form>
 <?php
@@ -75,11 +75,11 @@ if(isset($topic_results)) {
 	/* Topic results */
 	$columns = array
 	(
-		'Headline',
-		'Snippet',
-		'Author',
-		'Replies',
-		'Age ▼'
+		'Titel',
+		'Auszug',
+		'Autor',
+		'Antworten',
+		'Alter ▼'
 	);
 	if( ! $_SESSION['settings']['celebrity_mode']) {	
 		unset($columns[2]);
@@ -120,7 +120,7 @@ if(isset($topic_results)) {
 	
 	$topic_count = $table->row_count;
 	if($topic_count) {
-		echo '<h4 class="section">Topics</h4>';
+		echo '<h4 class="section">Fäden</h4>';
 		$table->output();
 	}
 	
@@ -128,10 +128,10 @@ if(isset($topic_results)) {
 	/* Reply results */
 	$columns = array
 	(
-		'Reply snippet',
-		'Topic',
-		'Author',
-		'Age ▼'
+		'Auszug',
+		'Faden',
+		'Autor',
+		'Alter ▼'
 	);
 	if( ! $_SESSION['settings']['celebrity_mode']) {	
 		unset($columns[2]);
@@ -174,12 +174,12 @@ if(isset($topic_results)) {
 	
 	$reply_count = $table->row_count;
 	if($reply_count) {
-		echo '<h4 class="section">Replies</h4>';
+		echo '<h4 class="section">Antworten</h4>';
 		$table->output();
 	}
 	
 	if($topic_count + $reply_count == 0) {
-		echo '<p>' . m('Search: No results') . '</p>';
+		echo '<p>' . m('Suche: keine Ergebnisse') . '</p>';
 	}
 }
 $page->navigation('search/' . urlencode($search_query), max(array($topic_count, $reply_count)));

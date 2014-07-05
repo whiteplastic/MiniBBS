@@ -2,7 +2,7 @@
 require './includes/bootstrap.php';
 force_id();
 update_activity('watchlist');
-$template->title = 'Your watchlist';
+$template->title = 'Beobachtungsliste';
 
 if($notifications['watchlist']) {
 	/* Stop watching topics that no longer exist */
@@ -19,20 +19,20 @@ if (is_array($_POST['rejects'])) {
 	foreach ($_POST['rejects'] as $reject_id) {
 		$db->q('DELETE FROM watchlists WHERE uid = ? AND topic_id = ?', $_SESSION['UID'], $reject_id);
 	}
-	$_SESSION['notice'] = 'Selected topics unwatched.';
+	$_SESSION['notice'] = 'Zu entfernende Fäden wählen';
 }
 
 echo '<form id="watchlist" name="watch_list" action="" method="post">';
 
 $res = $db->q('SELECT watchlists.topic_id AS id, watchlists.new_replies, topics.headline, topics.replies, topics.visits, topics.time FROM watchlists INNER JOIN topics ON watchlists.topic_id = topics.id WHERE watchlists.uid = ? ORDER BY watchlists.new_replies DESC, topics.last_post DESC', $_SESSION['UID']);
 
-$master_checkbox = '<input type="checkbox" name="master_checkbox" class="inline" onclick="checkAll(\'watchlist\')" title="Check/uncheck all" />';
+$master_checkbox = '<input type="checkbox" name="master_checkbox" class="inline" onclick="checkAll(\'watchlist\')" title="Alle/keinen auswählen" />';
 $columns = array
 (
-	$master_checkbox . 'Topic',
-	'Replies',
-	'Visits',
-	'Age ▼'
+	$master_checkbox . 'Faden',
+	'Antworten',
+	'Besuche',
+	'Alter ▼'
 );
 $topics = new Table($columns, 0);
 $topics->add_td_class(0, 'topic_headline');
@@ -59,7 +59,7 @@ while ($topic = $res->fetchObject()) {
 	$topics->row($values, $row_class);
 }
 $num_topics_fetched = $topics->row_count;
-$topics->output( m('Watchlist: No results') );
+$topics->output( m('Beobachtungsliste: keine Ergebnisse') );
 
 if ($num_topics_fetched !== 0) {
 	echo '<div class="row"><input type="submit" value="Unwatch selected" onclick="return confirm(\'Really remove selected topic(s) from your watchlist?\');" class="inline" /></div>';

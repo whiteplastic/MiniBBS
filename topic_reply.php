@@ -7,7 +7,7 @@ define('MINIMAL_BOOTSTRAP', true);
 require './includes/bootstrap.php';
 
 if( ! isset($_GET['reply'])) {
-	redirect('No reply specified', '');
+	redirect('Keine Antworten angegeben', '');
 }
 
 $topic = $_GET['topic'];
@@ -31,7 +31,7 @@ if($_SESSION['settings']['posts_per_page']) {
 	$total_replies = $reply_number = 1;
 }
 
-header('Location: ' . URL . 'topic/' . (int) $topic . page($total_replies, $reply_number) . '#reply_' . (int) $_GET['reply']);
+header('Adresse: ' . URL . 'topic/' . (int) $topic . page($total_replies, $reply_number) . '#reply_' . (int) $_GET['reply']);
 exit();
 
 ?>

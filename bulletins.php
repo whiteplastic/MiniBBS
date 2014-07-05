@@ -1,13 +1,13 @@
 <?php
 require './includes/bootstrap.php';
 
-$template->title = 'Bulletins';
+$template->title = 'Mitteilungen';
 $template->onload = "focusId('bulletin');";
 update_activity('bulletins');
 
 $page = new Paginate();
 if($page->current > 1) {
-	$template->title .= ', page #' . number_format($page->current);
+	$template->title .= ', Seite ' . number_format($page->current);
 }
 
 if($_POST['bulletin']) {
@@ -21,15 +21,15 @@ if($_POST['bulletin']) {
 	if( ! $perm->is_admin() && ! $perm->is_mod()) {
 		$res = $db->q('SELECT 1 FROM bulletins WHERE ip = ? AND time > (? - ?)', $_SERVER['REMOTE_ADDR'], $_SERVER['REQUEST_TIME'], FLOOD_CONTROL_BULLETINS);
 		if($res->fetchColumn()) {
-			error::add('Please wait a while before submitting another bulletin.');
+			error::add('Bitte warte ein wenig, bis du eine neue Mitteilung versendest.');
 		}
 	}
 	
 	if( ! $perm->get('bulletin')) {
-		error::add(m('Error: Access denied'));
+		error::add(m('Fehler: Zugriff verweigert.'));
 	}
 	if($_SESSION['post_count'] < MIN_BULLETIN_POSTS && ! $perm->is_admin()) {
-		error::add('Sorry, only regulars can post bulletins. You currently have ' . $_SESSION['post_count'] . ' posts, but need ' . MIN_BULLETIN_POSTS. '.');
+		error::add('Nur regelmäßige Besucher können Mitteilungen posten. Du hast momentan ' . $_SESSION['post_count'] . ' Beiträge geschrieben, brauchst aber ' . MIN_BULLETIN_POSTS. '.');
 	}
 	
 	if(error::valid()) {
@@ -42,9 +42,9 @@ if($_POST['bulletin']) {
 		);
 		if($res->rowCount() > 0) {
 			$db->q('UPDATE last_actions SET time = ? WHERE feature = ?', $_SERVER['REQUEST_TIME'], 'last_bulletin');
-			redirect('Bulletin posted.', '');
+			redirect('Mitteilung gespeichert.', '');
 		} else {
-			error::add('Database error.');
+			error::add('Datenbankfehler.');
 		}
 	}
 	
@@ -66,7 +66,7 @@ if($perm->get('bulletin')):
 		<textarea id="bulletin" name="bulletin" onkeydown="updateCharactersRemaining('bulletin', 'numCharactersLeftForBulletin', 512);" onkeyup="updateCharactersRemaining('bulletin', 'numCharactersLeftForBulletin', 512);" maxlength="512"><?php if(isset($bulletin)) echo htmlspecialchars($bulletin) ?></textarea>
 	</div>
 	<div class="row">
-		<input type="submit" value="Submit bulletin" class="inline">  <script type="text/javascript"> printCharactersRemaining('numCharactersLeftForBulletin', 512); </script>
+		<input type="submit" value="Senden" class="inline">  <script type="text/javascript"> printCharactersRemaining('numCharactersLeftForBulletin', 512); </script>
 	</div>
 </form>
 
@@ -75,12 +75,12 @@ endif;
 
 $columns = array
 (
-	'Author',
-	'Message',
-	'Age ▼'
+	'Autor',
+	'Nachricht',
+	'Alter ▼'
 );
 if($perm->get('delete')) {
-	$columns[] = 'Delete';
+	$columns[] = 'Löschen';
 }
 $table = new Table($columns, 1);
 
@@ -93,13 +93,13 @@ while($bulletin = $res->fetchObject()) {
 		'<span class="help" title="'.format_date($bulletin->time).'">' . age($bulletin->time) . '</span>'
 	);
 	if($perm->get('delete')) {
-		$values[] = '<a href="'.DIR.'delete_bulletin/'.$bulletin->id.'" onclick="return quickAction(this, \'Really delete this bulletin?\');">✘</a>';
+		$values[] = '<a href="'.DIR.'delete_bulletin/'.$bulletin->id.'" onclick="return quickAction(this, \'Wirklich löschen?\');">✘</a>';
 	}
 	
 	$table->row($values);
 }
 
-$table->output('(No bulletins to display.)');
+$table->output('(Keine Mitteilungen vorhanden.)');
 
 $page->navigation('bulletins', $table->row_count);
 $template->render();

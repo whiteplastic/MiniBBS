@@ -18,19 +18,19 @@ if ($topic_id) {
 	/* This is a reply. */
 	
 	if( ! $perm->get('post_reply')) {
-		error::fatal('You do not have permission to reply.');
+		error::fatal('Du hast keine Berechtigung zum Antworten.');
 	}
 		
 	$res = $db->q('SELECT headline, author, replies, deleted, locked, last_post FROM topics WHERE id = ?', $topic_id);
 	$topic = $res->fetchObject();
 	
 	if( ! $topic) {
-		$template->title = 'Non-existent topic';
-		error::fatal('There is no such topic. It may have been deleted.');
+		$template->title = 'Faden existiert nicht.';
+		error::fatal('Es gibt keinen solchen Faden. Vielleicht wurde er gelöscht.');
 	}
 		
 	if($topic->deleted) {
-		error::fatal('You cannot respond to a deleted topic.');
+		error::fatal('Du kannst auf keinen gelöschten Faden antworten.');
 	}
 	
 	if(AUTOLOCK && ($_SERVER['REQUEST_TIME'] - $topic->last_post) > AUTOLOCK && $topic->author != $_SESSION['UID']) {
@@ -40,7 +40,7 @@ if ($topic_id) {
 	update_activity('replying', $topic_id);
 	$reply = true;
 	$template->onload = "focusId('body');";
-	$template->title = 'New reply in topic: <a href="'.DIR.'topic/' . $topic_id . '">' . htmlspecialchars($topic->headline) . '</a>';
+	$template->title = 'Neue Antwort im Faden: <a href="'.DIR.'topic/' . $topic_id . '">' . htmlspecialchars($topic->headline) . '</a>';
 	
 	$check_watchlist = $db->q('SELECT 1 FROM watchlists WHERE uid = ? AND topic_id = ?', $_SESSION['UID'], $topic_id);
 	if ($check_watchlist->fetchColumn()) {
@@ -51,14 +51,14 @@ if ($topic_id) {
 	/* This is a topic. */
 	
 	if( ! $perm->get('post_topic')) {
-		error::fatal('You do not have permission to create a topic.');
+		error::fatal('Du hast keine Berechtigung, einen Faden zu erstellen.');
 	}
 	
 	update_activity('new_topic');
 	$reply = false;
 	$template->onload = "focusId('headline')";
 	$template->head = '<script type="text/javascript" src="' . DIR . 'javascript/polls.js"></script>';
-	$template->title = 'New topic';
+	$template->title = 'Neuer Faden';
 	
 	if ( ! empty($_POST['headline'])) {
 		$template->title .= ': ' . htmlspecialchars($_POST['headline']);
@@ -73,36 +73,36 @@ if ($edit_id) {
 	$editing = true;
 	
 	if( ! $perm->get('edit')) {
-		error::fatal('You do not have permission to edit posts.');
+		error::fatal('Du hast keine Berechtigung, Beiträge zu bearbeiten.');
 	}
 	
 	if ($reply) {
 		$fetch_edit = $db->q('SELECT author, time, body, edit_mod AS `mod` FROM replies WHERE id = ?', $edit_id);
-		$template->title = 'Editing <a href="'.DIR.'topic/' . $topic_id . '#reply_' . $edit_id . '">reply</a> to topic: <a href="'.DIR.'topic/' . $topic_id . '">' . htmlspecialchars($topic->headline) . '</a>';
+		$template->title = 'Bearbeite <a href="'.DIR.'topic/' . $topic_id . '#reply_' . $edit_id . '">Antwort</a> auf den Faden <a href="'.DIR.'topic/' . $topic_id . '">' . htmlspecialchars($topic->headline) . '</a>';
 	} else {
 		$fetch_edit = $db->q('SELECT author, time, body, edit_mod AS `mod`, headline FROM topics WHERE id = ?', $edit_id);
-		$template->title = 'Editing topic';
+		$template->title = 'Bearbeite Faden';
 	}
 	
 	$edit_data = $fetch_edit->fetchObject();
 	
 	if ( ! $edit_data) {
-		error::fatal('There is no such post. It may have been deleted.');
+		error::fatal('Es gibt diesen Beitrag nicht. Vielleicht wurde er gelöscht.');
 	}
 		
 	if ($edit_data->author === $_SESSION['UID']) {
 		$edit_mod = 0;
 		
 		if ($perm->get('edit_limit') != 0 && ($_SERVER['REQUEST_TIME'] - $edit_data->time > $perm->get('edit_limit'))) {
-			error::fatal('You can no longer edit your post.');
+			error::fatal('Du kannst diesen Beitrag nicht mehr bearbeiten.');
 		}
 		if ($edit_data->mod) {
-			error::fatal('You can not edit a post that has been edited by a moderator.');
+			error::fatal('Du kannst diesen Beitrag nicht bearbeiten, weil ein Moderator dies schon getan hat.');
 		}
 	} else if ($perm->get('edit_others')) {
 		$edit_mod = 1;
 	} else {
-		error::fatal('You are not allowed to edit that post.');
+		error::fatal('Du darfst diesen Beitrag nicht bearbeiten.');
 	}
 	
 	/* Fill in the form. */
@@ -146,18 +146,18 @@ if (isset($_POST['form_sent'])) {
 	if ($_POST['post']) {
 		/* Check for poorly made bots. */
 		if ( ! $editing && $_SERVER['REQUEST_TIME'] - $_POST['start_time'] < 3) {
-			error::add('Wait a few seconds between starting to compose a post and actually submitting it.');
+			error::add('Warte ein wenig, bis du einen Beitrag abschickst.');
 		}
 		
 		if ( ! empty($_POST['e-mail'])) {
-			error::add('Bot detected.');
+			error::add('Bot detektiert.');
 		}
 		
 		if(strpos($body, 'http') !== false) {
 			if( ! $perm->get('post_link')) {
-				error::add('You do not have permission to post links.');
+				error::add('Du darfst keine Links posten.');
 			} else if( ! $_SESSION['post_count'] && RECAPTCHA_ENABLE) {
-				show_captcha('Your first post includes a link. To prove that you\'re not a spambot, complete the following CAPTCHA.');
+				show_captcha('Dein erster Beitrag enthält einen Link. Um zu beweisen, dass du ein Mensch bist, bitte fülle dieses CAPTCHA aus.');
 			}
 		}
 		
@@ -176,7 +176,7 @@ if (isset($_POST['form_sent'])) {
 		}
 		
 		if (count(explode("\n", $body)) > MAX_LINES) {
-			error::add('Your post has too many lines.');
+			error::add('Beitrag hat zu viele Zeilen.');
 		}
 		
 		if(ALLOW_IMAGES && $perm->get('post_image') && ! empty($_FILES['image']['name'])) {
@@ -191,7 +191,7 @@ if (isset($_POST['form_sent'])) {
 		if( ! isset($image) && ! empty($_POST['imgur'])) {
 			$_POST['imgur'] = trim($_POST['imgur']);
 			if( ! preg_match('/imgur\.com\/([a-zA-Z0-9]{3,10})/', $_POST['imgur'], $matches)) {
-				error::add('That does not appear to be a valid imgur URL.');
+				error::add('Das ist keine gültige Imgur-URL.');
 			} else {
 				$imgur = $matches[1];
 			}
@@ -212,7 +212,7 @@ if (isset($_POST['form_sent'])) {
 					$edit_id
 				);
 										
-				$congratulation = m('Notice: Reply edited');
+				$congratulation = m('Hinweis: Beitrag bearbeitet.');
 				
 			} else {
 				/* Editing a topic. */
@@ -226,7 +226,7 @@ if (isset($_POST['form_sent'])) {
 					$edit_id
 				);
 					
-				$congratulation = m('Notice: Topic edited');
+				$congratulation = m('Hinweis: Faden bearbeitet.');
 			}
 			
 			if($edit_mod) {
@@ -248,12 +248,12 @@ if (isset($_POST['form_sent'])) {
 			/* Posting a reply. */
 
 			if($topic->locked != 0 && ! $perm->get('lock')) {
-				error::add('You cannot reply to a locked thread.');
+				error::add('Du kannst auf keinen geschlossenen Faden antworten.');
 			}
 			
 			/* Lurk more. */
 			if ($_SERVER['REQUEST_TIME'] - $_SESSION['first_seen'] < REQUIRED_LURK_TIME_REPLY) {
-				error::add('Lurk for at least ' . REQUIRED_LURK_TIME_REPLY . ' seconds before posting your first reply.');
+				error::add('Du musst ' . REQUIRED_LURK_TIME_REPLY . ' Sekunden lauern, bis du deine erste Antwort verfasst.');
 			}
 			
 			/* Flood control. */
@@ -261,7 +261,7 @@ if (isset($_POST['form_sent'])) {
 			$res = $db->q('SELECT 1 FROM replies WHERE author_ip = ? AND time > ?', $_SERVER['REMOTE_ADDR'], $too_early);
 
 			if ($res->fetchColumn()) {
-				error::add('Wait at least ' . FLOOD_CONTROL_REPLY . ' seconds between each reply. ');
+				error::add('Warte mindestens ' . FLOOD_CONTROL_REPLY . ' Sekunden vor jeder Antwort.');
 			}
 				
 			if(error::valid()) {
@@ -298,14 +298,14 @@ if (isset($_POST['form_sent'])) {
 				/* Update watchlists. */
 				$db->q('UPDATE watchlists SET new_replies = 1 WHERE topic_id = ? AND uid != ?', $topic_id, $_SESSION['UID']);
 				
-				$congratulation = m('Notice: Reply posted');
+				$congratulation = m('Hinweis: Antwort gespeichert.');
 			}
 		} else {
 			/* Posting a topic. */
 				
 			/* Do we need to lurk some more? */
 			if ($_SERVER['REQUEST_TIME'] - $_SESSION['first_seen'] < REQUIRED_LURK_TIME_TOPIC) {
-				error::add('Lurk for at least ' . REQUIRED_LURK_TIME_TOPIC . ' seconds before posting your first topic.');
+				error::add('Lauere mindestens ' . REQUIRED_LURK_TIME_TOPIC . ' Sekunden, bevor du deinen ersten Faden erstellst.');
 			}
 			
 			/* Flood control. */
@@ -313,7 +313,7 @@ if (isset($_POST['form_sent'])) {
 			$res = $db->q('SELECT 1 FROM topics WHERE author_ip = ? AND time > ?', $_SERVER['REMOTE_ADDR'], $too_early);
 			
 			if ($res->fetchColumn()) {
-				error::add('Wait at least ' . FLOOD_CONTROL_TOPIC . ' seconds before creating another topic. ');
+				error::add('Warte mindestens ' . FLOOD_CONTROL_TOPIC . ' Sekunden, bevor du einen neuen Faden erstellst.');
 			}
 			
 			/* Is this a valid poll? */
@@ -328,7 +328,7 @@ if (isset($_POST['form_sent'])) {
 						unset($_POST['option'][$id]);
 					}
 					else if(strlen($text) > 80) {
-						error::add('Poll option ' . ($id + 1) . ' exceeded 80 characters.');
+						error::add('Option ' . ($id + 1) . ' ist länger als 80 Zeichen.');
 					}
 				}
 				
@@ -357,7 +357,7 @@ if (isset($_POST['form_sent'])) {
 					}
 				}
 				
-				$congratulation = m('Notice: Topic created');
+				$congratulation = m('Hinweis: Faden erstellt.');
 			}
 		}
 		
@@ -483,29 +483,29 @@ echo '<div>';
 
 /* Check if OP. */
 if ($reply && ! $editing) {
-	echo '<p>You <strong>are';
+	echo '<p>Du <strong>bist';
 	if ($_SESSION['UID'] !== $topic->author) {
-		echo ' not';
+		echo ' nicht';
 	}
-	echo '</strong> recognized as the original poster of this topic.</p>';
+	echo '</strong> der OP dieses Fadens.</p>';
 }
 
 /* Print deadline for edit submission. */
 if ($editing && $perm->get('edit_limit') != 0) {
-	echo '<p>You have <strong>' . age($_SERVER['REQUEST_TIME'], $edit_data->time + $perm->get('edit_limit')) . '</strong> left to finish editing this post.</p>';
+	echo '<p>Du hast noch <strong>' . age($_SERVER['REQUEST_TIME'], $edit_data->time + $perm->get('edit_limit')) . '</strong> um diesen Beitrag zu bearbeiten.</p>';
 }
 
 /* Print preview. */
 if ($_POST['preview'] && ! empty($body)) {
 	$preview_body = parser::parse($body, $_SESSION['UID']);
 	$preview_body = preg_replace('/^@([0-9]+|OP),?([0-9]+)?/m', '<span class="unimportant"><a href="'.DIR.'topic/'.(int)$topic_id.'#reply_$1$2">$0</a></span>', $preview_body);
-	echo '<h3 id="preview">Preview</h3><div class="body standalone">' . $preview_body . '</div>';
+	echo '<h3 id="preview">Vorschau</h3><div class="body standalone">' . $preview_body . '</div>';
 }
 
 /* Check if any new replies have been posted since we last viewed the topic. */
 if ($reply && isset($_SESSION['topic_visits'][$topic_id]) && $_SESSION['topic_visits'][$topic_id] < $topic->replies) {
 	$new_replies = $topic->replies - $_SESSION['topic_visits'][$topic_id];
-	echo '<p><a href="'.DIR.'topic/' . $topic_id . '#new"><strong>' . $new_replies . '</strong> new repl' . ($new_replies == 1 ? 'y</a> has' : 'ies</a> have') . ' been posted in this topic since you last checked!</p>';
+	echo '<p><a href="'.DIR.'topic/' . $topic_id . '#new"><strong>' . $new_replies . '</strong> Neue Antwort' . ($new_replies == 1 ? '</a> wurde' : 'en</a> wurden') . ' wurden geschrieben, seit du den Faden besucht hast! </p>';
 }
 
 ?>
@@ -539,31 +539,31 @@ if ($reply && isset($_SESSION['topic_visits'][$topic_id]) && $_SESSION['topic_vi
 
 	<?php if(IMGUR_KEY && ! $editing): ?>
 		<div>
-			<?php if(ALLOW_IMAGES) echo 'Or use an' ?> imgur URL: 
+			<?php if(ALLOW_IMAGES) echo 'Oder benutze' ?> imgur URL: 
 			<input type="text" name="imgur" id="imgur" class="inline" size="21" placeholder="http://i.imgur.com/wDizy.gif" />
 			<a href="http://imgur.com/" id="imgur_status" onclick="$('#imgur_file').click(); return false;">[upload]</a>
 			<input type="file" id="imgur_file" class="noscreen" onchange="imgurUpload(this.files[0], '<?php echo IMGUR_KEY ?>')" />
 		</div>
 	<?php endif; ?>
-		<p><?php echo m('Post: Help') ?></p>
+		<p><?php echo m('Beitrag: Hilfe') ?></p>
 	</div>
 	<?php if ( ! $watching_topic): ?>
 		<div class="row">
 			<input type="checkbox" name="watch_topic" id="watch_topic" class="inline"<?php if(isset($_POST['watch_topic'])) echo ' checked="checked"' ?> />
-			<label for="watch_topic" class="inline"> Watch</label>
+			<label for="watch_topic" class="inline"> Beobachten</label>
 		</div>
 	<?php endif; ?>
 	<?php if( ! $reply && ! $editing): ?>
 		<?php if($perm->get('stick')): ?>
 			<div>
 				<input type="checkbox" name="sticky" value="1" class="inline"/>
-				<label for="sticky" class="inline"> Stick</label>
+				<label for="sticky" class="inline"> Sticky</label>
 			</div>
 		<?php endif; ?>
 		<?php if($perm->get('lock')): ?>
 			<div class="row">
 				<input type="checkbox" name="locked" value="1" class="inline"/>
-				<label for="locked" class="inline"> Lock</label>
+				<label for="locked" class="inline"> Schließen</label>
 			</div>
 		<?php endif;?>
 	<?php endif; ?>
@@ -573,11 +573,11 @@ if( ! $reply && ! $editing):
 ?>
 		
 	<input type="hidden" id="enable_poll" name="enable_poll" value="1" />
-	<ul class="menu"><li><a id="poll_toggle" onclick="showPoll(this);">Poll options</a></li></ul>
+	<ul class="menu"><li><a id="poll_toggle" onclick="showPoll(this);">Abstimmungsoptionen</a></li></ul>
 		
 	<table id="topic_poll">
 		<tr class="odd">
-			<th colspan="2"><input type="checkbox" name="hide_results" id="hide_results" value="1" class="inline"<?php if($_POST['hide_results']) echo ' checked="checked"' ?>/><label for="hide_results" class="inline help" title="If checked, the results of the poll will be hidden until a user either votes or chooses to 'show results'."> Hide results before voting</label></td>
+			<th colspan="2"><input type="checkbox" name="hide_results" id="hide_results" value="1" class="inline"<?php if($_POST['hide_results']) echo ' checked="checked"' ?>/><label for="hide_results" class="inline help" title="Wenn aktiv, werden die Ergebnisse der Abstimmung versteckt, bis abgestimmt oder 'Ergebnisse anzeigen' geklickt wurde."> Ergebnisse vor der Stimmabgabge verstecken.</label></td>
 		</tr>
 <?php
 	/* Print at least two, or as many as were submitted (in case of preview/error) */
@@ -585,7 +585,7 @@ if( ! $reply && ! $editing):
 ?>
 	<tr>
 		<td class="minimal">
-			<label for="poll_option_<?php echo $i ?>">Poll option #<?php echo $i ?></label>
+			<label for="poll_option_<?php echo $i ?>"Abstimmungsoption Nr.<?php echo $i ?></label>
 		</td>
 		<td>
 			<input type="text" size="50" maxlength="80" id="poll_option_<?php echo $i ?>" name="option[]" value="<?php if(isset($_POST['form_sent'])) echo htmlspecialchars($_POST['option'][$i - 1]) ?>" class="poll_input" />
@@ -598,14 +598,14 @@ endif;
 	</table>
 		
 	<div class="row">
-	<input type="submit" name="preview" tabindex="3" value="Preview" class="inline"<?php if(ALLOW_IMAGES) echo ' onclick="document.getElementById(\'image\').value=\'\'"' ?> /> 
-		<input type="submit" name="post" tabindex="4" value="<?php echo ($editing) ? 'Update' : 'Post' ?>" class="inline">
+	<input type="submit" name="preview" tabindex="3" value="Vorschau" class="inline"<?php if(ALLOW_IMAGES) echo ' onclick="document.getElementById(\'image\').value=\'\'"' ?> /> 
+		<input type="submit" name="post" tabindex="4" value="<?php echo ($editing) ? 'Aktualisieren' : 'Post' ?>" class="inline">
 	</div>
 </form>
 </div>
 
 <?php if( ! empty($cited_text)): ?>
-	<h3 id="replying_to">Replying to <?php echo format_name($cited_name, $cited_trip) ?>&hellip;</h3> 
+	<h3 id="replying_to">Antwort auf <?php echo format_name($cited_name, $cited_trip) ?>&hellip;</h3> 
 	<div class="body standalone"><?php echo $cited_text ?></div>
 <?php endif; ?>
 

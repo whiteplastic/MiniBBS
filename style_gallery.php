@@ -10,25 +10,25 @@ $db->select('id, title, name, trip, color, modified, basis, uid, public')
    
 if( ! isset($_GET['mine'])) {
 	$db->where('public = 1');
-	$template->title = 'Custom theme gallery';
+	$template->title = 'Theme-Gallerie';
 } else {
 	$db->where('uid = ?', $_SESSION['UID']);
-	$template->title = 'My themes';
+	$template->title = 'Meine Themes';
 }
 
 $res = $db->exec();
 
 if ($page->current > 1) {
-	$template->title   .= ', page #' . number_format($page->current);
+	$template->title   .= ', Seite ' . number_format($page->current);
 }
 
 ?>
 <ul class="menu">
-	<li><a href="<?php echo DIR ?>new_style">New theme</a></li>
+	<li><a href="<?php echo DIR ?>new_style">Neues Theme</a></li>
 	<?php if(isset($_GET['mine'])): ?>
-		<li><a href="<?php echo DIR ?>theme_gallery">All themes</a></li>
+		<li><a href="<?php echo DIR ?>theme_gallery">Alle Themes</a></li>
 	<?php else: ?>
-		<li><a href="<?php echo DIR ?>theme_gallery/you">My themes</a></li>
+		<li><a href="<?php echo DIR ?>theme_gallery/you">Meine Themes</a></li>
 	<?php endif; ?>
 </ul>
 
@@ -36,10 +36,10 @@ if ($page->current > 1) {
 $columns = array
 (
 	'',
-	'Title',
+	'Titel',
 	'Basis',
-	'Author',
-	'Modified ▼'
+	'Autor',
+	'Bearbeitet ▼'
 );
 $table = new Table($columns, 1);
 
@@ -54,12 +54,12 @@ while($style = $res->fetchObject()) {
 	);
 	
 	if($style->uid == $_SESSION['UID']) {
-		$values[1] .= ' (' . ($style->public ? '' : 'private; ') . '<a href="'.DIR.'edit_style/'.$style->id.'">edit</a>)';
+		$values[1] .= ' (' . ($style->public ? '' : 'private; ') . '<a href="'.DIR.'edit_style/'.$style->id.'">bearbeiten</a>)';
 	}
 	
 	$table->row($values);
 }
-$table->output(isset($_GET['mine']) ? 'You haven\'t created any themes yet.' : 'No one has submitted a public theme yet.');
+$table->output(isset($_GET['mine']) ? 'Du hast noch keine Themes erstellt.' : 'Niemand hat bisher ein Theme eingereicht.');
 $page->navigation('theme_gallery', $table->row_count);
 $template->render();
 ?>

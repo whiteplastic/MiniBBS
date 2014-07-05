@@ -3,11 +3,11 @@ require './includes/bootstrap.php';
 force_id();
 
 if( ! $perm->get('view_profile')) {
-	error::fatal(m('Error: Access denied'));
+	error::fatal(m('Fehler: Zugriff verweigert'));
 }
 
 if( ! isset($_GET['uid'])) {
-	error::fatal('No UID specified.');
+	error::fatal('Keine UID angegeben.');
 }
 
 if(isset($_POST['mass_delete']) && check_token() && $perm->get('delete')) {

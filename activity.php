@@ -37,36 +37,36 @@ while (list($action, $action_id, $uid, $age, $headline) = $res->fetch()) {
 	// Array key based off.
 	$actions  = array(
 		'advertise' => 'Inquiring about advertising.',
-		'statistics' => 'Looking at board statistics.',
-		'hot_topics' => 'Looking at the hottest topics.',
-		'shuffle' => 'Doing a topic shuffle.',
-		'bulletins' => 'Reading latest bulletins.',
-		'bulletins_old' => 'Reading latest bulletins.',
-		'bulletins_new' => 'Posting a new bulletin.',
-		'events' => 'Checking out events.',
-		'events_new' => 'Posting a new event.',
-		'activity' => 'Looking at what other people are doing.',
-		'ignore_list' => 'Editing their ignore list.',
-		'notepad' => 'Reading or writing in their <a href="'.DIR.'notepad">notepad</a>.',
-		'topics' => 'Looking at older topics.',
-		'dashboard' => 'Modifying their dashboard',
-		'latest_replies' => 'Looking at latest replies.',
-		'latest_bumps' => 'Checking out latest bumps.',
-		'latest_topics' => 'Checking out latest topics.',
-		'search' => 'Searching for a topic.',
-		'stuff' => 'Looking at stuff.',
-		'history' => 'Looking at post history.',
-		'failed_postings' => 'Looking at post failures.',
-		'watchlist' => 'Checking out their watchlist.',
-		'restore_id' => 'Logging in.',
-		'new_topic' => 'Creating a new topic.',
-		'nonexistent_topic' => 'Trying to look at a non-existant topic.',
-		'topic' => "Reading in topic: <strong><a href=\"".DIR."topic/$action_id\">$headline</a></strong>",
-		'replying' => "Replying to topic: <strong><a href=\"".DIR."topic/$action_id\">$headline</a></strong>",
-		'topic_trivia' => "Reading <a href=\"".DIR."trivia_for_topic/$action_id\">trivia for topic</a>: <strong><a href=\"".DIR."topic/$action_id\">$headline</a></strong>",
-		'trash_can' => 'Going through the trash.',
-		'status_check' => 'Doing a status check.',
-		'banned' => 'Being banned.'
+		'statistics' => 'Schaut sich Statisitken an.',
+		'hot_topics' => 'Schaut sich beliebte Fäden an.',
+		'shuffle' => 'Schaut sich Zufallsfäden an.',
+		'bulletins' => 'Liest die neuesten Mitteilungen.',
+		'bulletins_old' => 'Liest ältere Mitteilungen.',
+		'bulletins_new' => 'Schreibt eine neue Mitteilung.',
+		'events' => 'Schaut sich die Termine an.',
+		'events_new' => 'Stellt einen neuen Termin ein.',
+		'activity' => 'Schaut sich an, was andere machen.',
+		'ignore_list' => 'Bearbeitet seine Ignoreliste.',
+		'notepad' => 'Liest oder schreibt auf seinem <a href="'.DIR.'notepad">Notizblock</a>.',
+		'topics' => 'Schaut sich ältere Fäden an.',
+		'dashboard' => 'Bearbeitet sein Kontrollzentrum.',
+		'latest_replies' => 'Schaut sich die letzten Antworten an..',
+		'latest_bumps' => 'Schaut sich die letzten Stöße an.',
+		'latest_topics' => 'Schaut sich die aktuellen Fäden an.',
+		'search' => 'Sucht nach einem Faden.',
+		'stuff' => 'Ist in der Übersicht.',
+		'history' => 'Schaut sich den Verlauf an.',
+		'failed_postings' => 'Schaut sich fehlgeschlagene Beiträge an.',
+		'watchlist' => 'Schaut sich beobachtete Fäden an.',
+		'restore_id' => 'Loggt sich ein.',
+		'new_topic' => 'Erstellt einen Faden.',
+		'nonexistent_topic' => 'Versucht, einen nichtexistenten Faden aufzurufen.',
+		'topic' => "Liest den Faden: <strong><a href=\"".DIR."topic/$action_id\">$headline</a></strong>",
+		'replying' => "Antwortet: <strong><a href=\"".DIR."topic/$action_id\">$headline</a></strong>",
+		'topic_trivia' => "Liest <a href=\"".DIR."trivia_for_topic/$action_id\">Informationen zum Faden</a>: <strong><a href=\"".DIR."topic/$action_id\">$headline</a></strong>",
+		'trash_can' => 'Wühlt im Müll.',
+		'status_check' => 'Prüft den Status.',
+		'banned' => 'Ist gebannt.'
 	);
 	
 	$action = $actions[$action];
@@ -78,7 +78,7 @@ while (list($action, $action_id, $uid, $age, $headline) = $res->fetch()) {
 	
 	// Repeated actions are listed as (See above).
 	if ($action == $old_action) {
-		$temp = '<span class="unimportant">(See above)</span>';
+		$temp = '<span class="unimportant">(Siehe oben)</span>';
 	} else {
 		$old_action = $action;
 		$temp       = $action;
@@ -93,7 +93,7 @@ while (list($action, $action_id, $uid, $age, $headline) = $res->fetch()) {
 }
 $table->output();
 if ($count > 100) {
-	echo '<p class="unimportant">(There are "a lot" of people active right now. Not all are shown here.)</p>';
+	echo '<p class="unimportant">(Es sind gerade <b>sehr viele</b> Leute online. Es werden also nicht alle angezeigt.)</p>';
 }
 $template->render();
 ?>

@@ -10,10 +10,10 @@ update_activity('topics', $page->current);
 
 if ($page->current === 1) {
 	if($topics_mode) {
-		$template->title = 'Latest topics';
+		$template->title = 'Aktuelle Fäden';
 		$last_seen = $_COOKIE['last_topic'];
 	} else {
-		$template->title = 'Latest bumps';
+		$template->title = 'Aktuelle Stöße';
 		$last_seen = $_COOKIE['last_bump'];
 	}
 } else {
@@ -37,12 +37,12 @@ if(BULLETINS_ON_INDEX > 0 && ( ! isset($last_actions['last_bulletin']) || $last_
 
 	$columns = array
 	(
-		'Author',
-		'Bulletin',
-		'Age ▼'
+		'Autor',
+		'Mitteilung',
+		'Alter ▼'
 	);
 	if($perm->get('delete')) {
-		$columns[] = 'Delete';
+		$columns[] = 'Löschen';
 	}
 
 	$table = new Table($columns, 1);
@@ -56,7 +56,7 @@ if(BULLETINS_ON_INDEX > 0 && ( ! isset($last_actions['last_bulletin']) || $last_
 			'<span class="help" title="'.format_date($bulletin->time).'">' . age($bulletin->time) . '</span>'
 		);
 		if($perm->get('delete')) {
-			$values[] = '<a href="'.DIR.'delete_bulletin/'.$bulletin->id.'" onclick="return quickAction(this, \'Really delete this bulletin?\');">✘</a>';
+			$values[] = '<a href="'.DIR.'delete_bulletin/'.$bulletin->id.'" onclick="return quickAction(this, \'Wirklich löschen?\');">✘</a>';
 		}
 		
 		$table->row($values);
@@ -68,11 +68,11 @@ if(BULLETINS_ON_INDEX > 0 && ( ! isset($last_actions['last_bulletin']) || $last_
 $order_name = ($topics_mode) ? 'Age' : ((MOBILE_MODE) ? 'Bump' : 'Last bump');
 $columns = array
 (
-	'Headline',
-	'Snippet',
-	'Author',
-	'Replies',
-	'Visits',
+	'Titel',
+	'Auszug',
+	'Autor',
+	'Antworten',
+	'Besuche',
 	$order_name . ' ▼'
 );
 /* If mobile mode is enabled, remove the visits column. */
@@ -124,7 +124,7 @@ while($topic = $res->fetchObject()) {
 		
 	$headline = htmlspecialchars($topic->headline);
 	if(isset($topic->citation) && $topic->citation) {
-		$headline = '<em class="help" title="New reply to your reply inside!">' . $headline . '</em>';
+		$headline = '<em class="help" title="Neue Antwort an dich!">' . $headline . '</em>';
 	}
 	
 	$snippet = parser::snippet($topic->body);
@@ -162,7 +162,7 @@ while($topic = $res->fetchObject()) {
 
 	$table->row($values, $row_class);
 }
-$table->output('(No one has created a topic yet.)');
+$table->output('(Bisher gibt es keine Fäden)');
 
 $navigation_path = ($topics_mode ? 'topics' : 'bumps');
 $page->navigation($navigation_path, $table->row_count);

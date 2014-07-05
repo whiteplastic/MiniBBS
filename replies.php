@@ -4,10 +4,10 @@ require './includes/bootstrap.php';
 $page = new Paginate();
 // Check if we're on a specific page.
 if ($page->current === 1) {
-	$template->title   = 'Latest replies';
+	$template->title   = 'Letzte Antworten';
 	update_activity('latest_replies');
 } else {
-	$template->title   = 'Replies, page #' . number_format($page->current);
+	$template->title   = 'Antworten, Seite ' . number_format($page->current);
 	update_activity('replies', $page->current);
 }
 
@@ -15,10 +15,10 @@ $res = $db->q('SELECT replies.id, replies.parent_id, replies.time, replies.body,
 
 $columns = array
 (
-	'Snippet',
-	'Topic',
+	'Auszug',
+	'Faden',
 	'Name',
-	'Age ▼'
+	'Alter ▼'
 );
 $replies = new Table($columns, 1);
 $replies->add_td_class(1, 'topic_headline');
@@ -28,7 +28,7 @@ while ($reply = $res->fetchObject()) {
 	$values = array
 	(
 		'<a href="'.DIR.'topic/' . $reply->parent_id . '#reply_' . $reply->id . '">' . parser::snippet($reply->body) . '</a>',
-		'<a href="'.DIR.'topic/' . $reply->parent_id . '">' . htmlspecialchars($reply->headline) . '</a> <span class="help unimportant" title="' . format_date($reply->parent_time) . '">(' . age($reply->parent_time) . ' old)</span>',
+		'<a href="'.DIR.'topic/' . $reply->parent_id . '">' . htmlspecialchars($reply->headline) . '</a> <span class="help unimportant" title="' . format_date($reply->parent_time) . '">(' . age($reply->parent_time) . ' alt)</span>',
 		format_name($reply->namefag, $reply->tripfag, $reply->link),
 		'<span class="help" title="' . format_date($reply->time) . '">' . age($reply->time) . '</span>'
 	);

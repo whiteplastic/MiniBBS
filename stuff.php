@@ -1,7 +1,7 @@
 <?php
 require './includes/bootstrap.php';
 update_activity('stuff');
-$template->title = 'Stuff';
+$template->title = 'Übersicht';
 
 /**
  * If 48 hours has passed since we last optimized the database, send an AJAX
@@ -14,29 +14,29 @@ if(cache::fetch('maintenance') < $_SERVER['REQUEST_TIME'] - 172800) {
 ?>
 <div style="width: 50%; float:left">
 <ul class="stuff">
-	<li><strong><a href="<?php echo DIR; ?>dashboard">Dashboard</a></strong> — <span class="unimportant">Your personal settings, including username and password.</span></li>
-	<li><a href="<?php echo DIR; ?>private_messages">Inbox</a> — <span class="unimportant">Your private messages (<?php echo $notifications['pms']; ?> new).</span></li>
-	<li><a href="<?php echo DIR; ?>edit_ignore_list">Edit ignore list</a> — <span class="unimportant">Self-censorship.</span></li>
-	<li><a href="<?php echo DIR; ?>theme_gallery">Theme gallery</a> <?php echo ($_SESSION['settings']['custom_style'] ? '(<a href="'.DIR.'edit_style/' . (int) $_SESSION['settings']['custom_style'] . '">edit</a>)' : '(<a href="'.DIR.'new_style">new</a>)') ?> — <span class="unimportant">Browse user-contributed styles.</span></li>
+	<li><strong><a href="<?php echo DIR; ?>dashboard">Kontrollzentrum</a></strong> — <span class="unimportant">Persönliche Einstellungen, Benutzername und Passwort..</span></li>
+	<li><a href="<?php echo DIR; ?>private_messages">Inbox</a> — <span class="unimportant">Deine privaten Nachrichten (<?php echo $notifications['pms']; ?> ungelesen).</span></li>
+	<li><a href="<?php echo DIR; ?>edit_ignore_list">Ignoreliste bearbeiten</a> — <span class="unimportant">Selbstzensur.</span></li>
+	<li><a href="<?php echo DIR; ?>theme_gallery">Theme-Gallerie</a> <?php echo ($_SESSION['settings']['custom_style'] ? '(<a href="'.DIR.'edit_style/' . (int) $_SESSION['settings']['custom_style'] . '">bearbeiten</a>)' : '(<a href="'.DIR.'new_style">neu</a>)') ?> — <span class="unimportant">Benutzerdefinierte Themes ansehen.</span></li>
 </ul>
 
 <ul class="stuff">
-	<li><a href="<?php echo DIR; ?>mod_log">Mod logs</a></li>
-	<li><a href="<?php echo DIR; ?>statistics">Statistics</a></li>
-	<li><a href="<?php echo DIR; ?>failed_postings">Failed postings</a></li>
-	<li><a href="<?php echo DIR; ?>date_and_time">Date and time</a></li>
-	<li><a href="<?php echo DIR; ?>notepad">Notepad</a> — <span class="unimportant">Your personal notepad.</span></li>
+	<li><a href="<?php echo DIR; ?>mod_log">Mod-Log</a></li>
+	<li><a href="<?php echo DIR; ?>statistics">Statistik</a></li>
+	<li><a href="<?php echo DIR; ?>failed_postings">Fehlgeschlagene Beiträge</a></li>
+	<li><a href="<?php echo DIR; ?>date_and_time">Datum und Uhrzeit</a></li>
+	<li><a href="<?php echo DIR; ?>notepad">Notizblock</a> — <span class="unimportant">Dein persönlicher Notizblock.</span></li>
 </ul>
 
 </div>
 
 <div class="width:50%; float:right">
 <ul class="stuff">
-	<li><strong><a href="<?php echo DIR; ?>restore_ID">Restore ID</a></strong> — <span class="unimportant">Log in.</span></li>
-	<li><a href="<?php echo DIR; ?>back_up_ID">Back up ID</a></li>
-	<li><a href="<?php echo DIR; ?>recover_ID_by_email">Recover ID by e-mail</a></li>
-	<li><a href="<?php echo DIR; ?>drop_ID">Drop ID</a> — <span class="unimportant">Log out.</span></li>
-	<li><a href="<?php echo DIR; ?>trash_can">Trash can</a> — <span class="unimportant">Your deleted posts.</span></li>
+	<li><strong><a href="<?php echo DIR; ?>restore_ID">ID wiederherstellen</a></strong> — <span class="unimportant">Einloggen.</span></li>
+	<li><a href="<?php echo DIR; ?>back_up_ID">ID speichern</a></li>
+	<li><a href="<?php echo DIR; ?>recover_ID_by_email">ID per Mail wiederherstellen</a></li>
+	<li><a href="<?php echo DIR; ?>drop_ID">ID löschen</a> — <span class="unimportant">Ausloggen.</span></li>
+	<li><a href="<?php echo DIR; ?>trash_can">Papierkorb</a> — <span class="unimportant">Deine gelöschten Beiträge.</span></li>
 </ul>
 
 <ul class="stuff">

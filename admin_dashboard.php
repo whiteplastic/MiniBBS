@@ -2,10 +2,10 @@
 require './includes/bootstrap.php';
 require './config/default_config.php';
 force_id();
-$template->title = 'Administrative dashboard';
+$template->title = 'Admin-Kontrollzentrum';
 
 if( ! $perm->get('admin_dashboard')) {
-	error::fatal(m('Error: Access denied'));
+	error::fatal(m('Zugriff verweigert'));
 }
 
 $available_langs = $lang->get_languages();
@@ -20,7 +20,7 @@ if(isset($_POST['form_sent'])) {
 	}
 	
 	if( ! in_array($_POST['form']['LANGUAGE'], $available_langs)) {
-		error::add('No language file for "' . htmlspecialchars($_POST['form']['LANGUAGE']) . '" exists.');
+		error::add('Keine Sprachdatei für "' . htmlspecialchars($_POST['form']['LANGUAGE']) . '" verfügbar.');
 	}
 	
 	if(error::valid()) {
@@ -47,37 +47,37 @@ if(isset($_POST['form_sent'])) {
 		
 		cache::clear('config');
 		/* Reload to view with the new configuration */
-		redirect('Configuration updated.', 'admin_dashboard');
+		redirect('Einstellungen gespeichert.', 'admin_dashboard');
 	}
 }
 
 ?>
 <ul class="menu">
-	<li><a href="#dash_general">General</a></li>
-	<li><a href="#dash_media">Media</a></li>
-	<li><a href="#dash_captcha">Bot detection</a></li>
-	<li><a href="#dash_permissions">Permissions</a></li>
-	<li><a href="#dash_posts">Posts</a></li>
-	<li><a href="#dash_pms">PMs</a></li>
-	<li><a href="#dash_bulletins">Bulletins</a></li>
-	<li><a href="#dash_cryptography">Cryptography</a></li>
+	<li><a href="#dash_general">Allgemein</a></li>
+	<li><a href="#dash_media">Medien</a></li>
+	<li><a href="#dash_captcha">Bot-Detektor</a></li>
+	<li><a href="#dash_permissions">Zugriffsreichte</a></li>
+	<li><a href="#dash_posts">Beiträge</a></li>
+	<li><a href="#dash_pms">Nachrichten</a></li>
+	<li><a href="#dash_bulletins">Mitteilungen</a></li>
+	<li><a href="#dash_cryptography">Verschlüsselung</a></li>
 </ul>
 
-<p>Most board settings can be managed from here, but database credentials, the site URL, caching and error handling can only be reconfigured by editing <kbd>config.php</kbd>.</p>
+<p>Die meisten Einstellungen können hier verändert werden, aber Einstellungen zur Datenbank oder zur URL müssen auf <kbd>config.php</kbd> gesetzt werden.</p>
 
 <form action="" method="post">
 	<?php echo csrf_token() ?>
 
 <h4 class="section" id="dash_general">General</h4>
 	<div>
-		<label class="common" for="SITE_TITLE">Site title</label>
+		<label class="common" for="SITE_TITLE">Titel der Seite</label>
 		<input type="text" id="SITE_TITLE" name="form[SITE_TITLE]" class="inline" value="<?php echo htmlspecialchars(SITE_TITLE) ?>" maxlength="100" />
-		<p class="caption">The name of your forum, as shown in the header and various other places.</p>
+		<p class="caption">Der Name des Forums, wie er im Titel und an anderen Stellen auftaucht..</p>
 
 	</div>
 	
 	<div>
-		<label class="common" for="DEFAULT_STYLESHEET">Default stylesheet</label>
+		<label class="common" for="DEFAULT_STYLESHEET">Standard-Stylesheet</label>
 		<select id="DEFAULT_STYLESHEET" name="form[DEFAULT_STYLESHEET]" class="inline">
         <?php
 		$available_styles = get_styles();
@@ -87,11 +87,11 @@ if(isset($_POST['form_sent'])) {
 		?>
 		</select>
 		
-		<p class="caption">The board's default style.</p>
+		<p class="caption">Der Standardstil des Forums.</p>
 	</div>
 	
 	<div>
-		<label class="common" for="LANGUAGE">Language</label>
+		<label class="common" for="LANGUAGE">Sprache</label>
 		<select id="LANGUAGE" name="form[LANGUAGE]" class="inline">
         <?php
 		foreach($available_langs as $lang_code) {
@@ -100,21 +100,21 @@ if(isset($_POST['form_sent'])) {
 		?>
 		</select>
 		
-		<p class="caption">The language of the board interface.</p>
+		<p class="caption">Die Sprache der Benutzeroberfläche.</p>
 	</div>
 
 	
 	<div>
-		<label class="common" for="MAILER_ADDRESS">Mailer address</label>
+		<label class="common" for="MAILER_ADDRESS">Mailer-Adresse</label>
 		<input type="text" id="MAILER_ADDRESS" name="form[MAILER_ADDRESS]" class="inline" value="<?php echo htmlspecialchars(MAILER_ADDRESS) ?>" maxlength="100" />
-		<p class="caption">E-mail sent by the forum software (such as ID recovery messages) will appear to come from this address.</p>
+		<p class="caption">E-Mails von der Forensoftware werden mit diesem Absender verschickt.</p>
 	</div>
 	
 	<div class="row">
-		<label class="common" for="DEFAULT_MENU">Default menu</label>
+		<label class="common" for="DEFAULT_MENU">Standardmenü</label>
 		<textarea id="DEFAULT_MENU" name="form[DEFAULT_MENU]" class="inline" rows="2" style="width:60%;"><?php echo htmlspecialchars(DEFAULT_MENU) ?></textarea>
 		
-		<p class="caption"><strong>Standard options</strong> (click to add): 
+		<p class="caption"><strong>Standardoptionen</strong> (zum hinzufügen klicken): 
 <?php
 		foreach($template->menu_options as $text => $path):
 			$text = str_replace('New topic', 'New_topic', $text);
@@ -125,39 +125,39 @@ if(isset($_POST['form_sent'])) {
 ?>
 		</p>
 		
-		<p class="caption">Aside from the standard items above, you can add custom links in the form of <kbd>[/dashboard My dashboard]</kbd> or <kbd>[http://example.com Example]</kbd>. You can add custom submenus by surrounding a block of links with curly brackets <kbd>{}</kbd> immediately after their parent. For example, "<kbd>[/normal Normal] [/parent Parent] {[/child1 Child 1] [http://example.com Child 2]} Stuff</kbd>".</p>
+		<p class="caption">Neben den Standardmenüpunkten kannst du eigene Links in der Form <kbd>[/dashboard Mein Kontrollzentrum]</kbd> oder <kbd>[http://google.de Google]</kbd> einstellen. Du kannst auch eigene Untermenüs hinzufügen, wenn du sie in geschweifte Klammern setzt. Beispiel: <kbd>[/normal Normal [/Übergeordnet Übergeordnet] {[/unterpunkt1 Unterpunkt 1 [http://google.de Unterpunkt 2]}</kbd>".</p>
 
 	</div>
 	
 	<div>
-		<label class="common" for="POSTS_PER_PAGE_DEFAULT">Posts per topic page</label>
+		<label class="common" for="POSTS_PER_PAGE_DEFAULT">Beiträge pro Fadenseite</label>
 
 		<input type="text" id="POSTS_PER_PAGE_DEFAULT" name="form[POSTS_PER_PAGE_DEFAULT]" class="inline" value="<?php echo htmlspecialchars(POSTS_PER_PAGE_DEFAULT) ?>" size="4" maxlength="6" />
-		<p class="caption">The maximum number of replies shown on each page of a topic. To disable pagination and show all replies at once, use 0. (The user can override this setting from their dashboard.)</p>
+		<p class="caption">Die maximale Anzahl von Antworten pro Seite eines Fadens. Wenn du 0 angibst, gibt es keine Obergrenze mehr und alles wird auf einer Seite angezeigt. Benutzer können das in ihren Einstellungen ändern.</p>
 	</div>
 	
 	<div>
-		<label class="common" for="ITEMS_PER_PAGE">Items per page</label>
+		<label class="common" for="ITEMS_PER_PAGE">Einträge pro Seite</label>
 		<input type="text" id="ITEMS_PER_PAGE" name="form[ITEMS_PER_PAGE]" class="inline" value="<?php echo htmlspecialchars(ITEMS_PER_PAGE) ?>" size="3" maxlength="5" />
-		<p class="caption">The number of items to display per page for tabulated data (e.g., the number of topics on the index).</p>
+		<p class="caption">Anzahl von Einträgen pro Seite für Tabellendaten (z.B. die Anzahl von Fäden im Index).</p>
 	</div>
 	
 	<div>
-		<label class="common" for="MEMORABLE_TOPICS">Memorable topics</label>
+		<label class="common" for="MEMORABLE_TOPICS">Beobachtbare Fäden</label>
 		<input type="text" id="MEMORABLE_TOPICS" name="form[MEMORABLE_TOPICS]" class="inline" value="<?php echo htmlspecialchars(MEMORABLE_TOPICS) ?>" size="4" maxlength="8" />
 
 		<p class="caption">For performance reasons, a UID will only track the reply count of the last <em><?php echo number_format(MEMORABLE_TOPICS) ?></em> topics it has visited.</em></p>
 	</div>
 	
 	<div>
-		<label class="common" for="MOD_GZIP">Enable GZIP</label>
+		<label class="common" for="MOD_GZIP">GZIP aktivieren</label>
 		<input type="checkbox" value="1" id="MOD_GZIP" name="form[MOD_GZIP]" class="inline" <?php if(MOD_GZIP) echo ' checked="checked"' ?>  />
 		<p class="caption">Should PHP compress pages before sending them?</p>
 	</div>
 	
-<h4 class="section" id="dash_media">Media</h4>
+<h4 class="section" id="dash_media">Medien</h4>
 	<div>
-		<label class="common" for="ALLOW_IMAGES">Allow uploads</label>
+		<label class="common" for="ALLOW_IMAGES">Uploads erlauben</label>
 		<input type="checkbox" value="1" id="ALLOW_IMAGES" name="form[ALLOW_IMAGES]" class="inline"<?php if(ALLOW_IMAGES) echo ' checked="checked"' ?> />
 		<p class="caption">Should users be able to upload an image with their post?</p>
 	</div>

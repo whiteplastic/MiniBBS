@@ -3,25 +3,25 @@ require './includes/bootstrap.php';
 force_id();
 update_activity('editing_style', 1);
 $template->onload = 'focusId(\'custom_style\')';
-$template->title = 'Creating a stylesheet';
+$template->title = 'Stylesheet erstellen';
 
 $editing = false;
 if(isset($_GET['edit'])) {
 	if( ! ctype_digit($_GET['edit'])) {
-		error::fatal('Invalid style ID.');
+		error::fatal('Ungültige ID');
 	}
 	
 	$res = $db->q('SELECT title, style AS css, name, trip, uid, public, basis, original FROM user_styles WHERE id = ?', $_GET['edit']);
 	$style = $res->fetchObject();
 	
 	if( ! $style) {
-		error::fatal('There is no style with that ID.');
+		error::fatal('Es gibt keinen Stil mit dieser ID');
 	}
 	if($style->uid == $_SESSION['UID']) {
 		$editing = true;
-		$template->title = 'Editing a stylesheet';
+		$template->title = 'Stylesheet bearbeiten';
 	} else if( ! $style->public) {
-		error::fatal('That style is private.');
+		error::fatal('Dieser Stil ist privat');
 	} else {
 		$style->public = '0';
 	}
@@ -54,7 +54,7 @@ if(isset($_POST['form_sent'])) {
 		/* Flood control */
 		$res = $db->q('SELECT COUNT(*) FROM user_styles WHERE uid = ? AND modified > ?', $_SESSION['UID'], $_SERVER['REQUEST_TIME'] - 300);
 		if($res->fetchColumn() > 9) {
-			error::add('You\'re editing too many stylesheets too quickly. Please wait a while.');
+			error::add('Du bearbeitest zu schnell. Bitte warte etwas.');
 		}
 		
 		/* Uncheck the public switch if a style identical to this already exists*/
@@ -69,13 +69,13 @@ if(isset($_POST['form_sent'])) {
 		$dangerous = array('expression', 'binding', 'behavior', 'script', '\\\\', '&', '@import', 'content\s*:');
 		foreach($dangerous as $word) {
 			if(preg_match('!'.$word.'!', $style->css)) {
-				error::add('Your CSS contains "' . $word . '", which is not allowed for security reasons.');
+				error::add('Dein Stil enthält "' . $word . '", was aus Sicherheitsgründen nicht erlaubt ist.');
 			}
 		}
 		
 		if($style->basis != '') {
 			if( ! in_array($style->basis, $base_styles)) {
-				error::add('The basis of your style does not appear to exist.');
+				error::add('Die Basis deines Stils existiert nicht.');
 			} else {
 				$basis_css = file_get_contents(SITE_ROOT . '/style/themes/' . $style->basis . '.css');
 
@@ -90,9 +90,9 @@ if(isset($_POST['form_sent'])) {
 		}
 		
 		if(error::valid()) {
-			$notice = 'Style saved.';
+			$notice = 'Stil gespeichert.';
 			if( ! $_SESSION['settings']['custom_style']) {
-				$notice .= ' You can enable it from the <a href="'.DIR.'dashboard">dashboard</a>.';
+				$notice .= ' Du kannst es im <a href="'.DIR.'dashboard">Kontrollzentrum</a> aktivieren.';
 			}
 			
 			if($editing) {

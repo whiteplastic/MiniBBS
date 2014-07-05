@@ -4,7 +4,7 @@ define('REPRIEVE_BAN', true);
 require './includes/bootstrap.php';
 
 force_id();
-$template->title = 'Create private message';
+$template->title = 'Neue private Nachricht';
 
 $banned = false;
 if($perm->uid_banned($_SESSION['UID'])) {
@@ -14,14 +14,14 @@ if($perm->uid_banned($_SESSION['UID'])) {
 }
 if($banned) {
 	if( ! ALLOW_BAN_APPEALS) {
-		error::fatal('Ban appeals are disabled on this board.');
+		error::fatal('Gegen Verbannungen kann in diesem Forum kein Einspruch eingelegt werden.');
 	}
 	if($perm->get_ban_appeal($banned)) {
-		error::fatal('You have already appealed your ban.');
+		error::fatal('Du gegen die Verbannung schon Einspruch eingelegt.');
 	}
 } else {
 	if($_SESSION['post_count'] < POSTS_FOR_USER_PM) {
-		error::fatal('Sorry, you need at least '.POSTS_FOR_USER_PM.' post'.(POSTS_FOR_USER_PM>1?'s':'').' to send PMs (you currently have ' . $_SESSION['post_count'] . ').');
+		error::fatal('Du brauchst mindestens '.POSTS_FOR_USER_PM.' Post'.(POSTS_FOR_USER_PM>1?'s':'').' um zu antworten, hast aber nur ' . $_SESSION['post_count'] . ').');
 	}
 }
 
@@ -29,34 +29,34 @@ $parent = 0;
 // Appealing a ban?
 if($banned) {
 	$destination = 'mods';
-	$template->title = 'Ban appeal';
+	$template->title = 'Einspruch gegen Verbannung';
 }
 // To the mods or admins?
 else if($_GET['to'] == 'mods' || $_GET['to'] == 'admins') {
 	$destination = $_GET['to'];
-	$template->title .= ' for the ' . $destination;
+	$template->title .= ' für die ' . $destination;
 }
 // To a specified ID?
 else if($perm->get('view_profile') && ! empty($_GET['to'])) {
 	$destination = $_GET['to'];
-	$template->title .= ' for poster <a href="' . DIR . 'profile/' . htmlspecialchars($destination) . '">' . htmlspecialchars($destination) . '</a>';
+	$template->title .= ' für Benutzer <a href="' . DIR . 'profile/' . htmlspecialchars($destination) . '">' . htmlspecialchars($destination) . '</a>';
 }
 // In reply to a previous PM?
 else if(ctype_digit($_GET['replyto'])) {
 	$res = $db->q('SELECT contents, source, destination, parent FROM private_messages WHERE id = ?', $_GET['replyto']);
 	if($db->num_rows() == 0) {
-		$template->title = 'Non-existent message';
-		error::fatal('The message you tried to reply to does not exist.');
+		$template->title = 'Nachricht existiert nicht';
+		error::fatal('Die Nachricht, auf die du antworten wolltest, existiert nicht.');
 	}
 	
 	list($prev['contents'], $prev['source'], $prev['destination'], $prev['parent']) = $res->fetch();
 	
 	if($prev['destination'] != $_SESSION['UID'] && $prev['source'] != $_SESSION['UID'] && !$perm->get('read_mod_pms')) {
-		error::fatal('The message you tried to reply to was not addressed to you.');
+		error::fatal('Die Nachricht, auf die du antworten wolltest, war nicht an dich gerichtet.');
 	}
 	
 	if($prev['parent'] !== $_GET['replyto']) {
-		error::fatal('You can only reply to a parent message.');
+		error::fatal('Du kannst nur auf eine vorhergehende Nachricht antworten.');
 	}
 	
 	$parent = $_GET['replyto'];
@@ -69,33 +69,33 @@ else if(ctype_digit($_GET['replyto'])) {
 // To the poster of a topic or reply?
 else if($_GET['topic'] || $_GET['reply']) {
 	if( ! ALLOW_USER_PM) {
-		error::fatal('Messaging other users is currently not allowed.');
+		error::fatal('Nachrichten an andere Benutzer sind derzeit nicht erlaubt.');
 	}
 	
 	if(ctype_digit($_GET['topic'])) {
 		$res = $db->q('SELECT author FROM topics WHERE id = ?', $_GET['topic']);
 		if($db->num_rows() == 0) {
-			error::fatal('There is no topic with that ID.');
+			error::fatal('Es gibt keinen Faden mit der ID.');
 		}
 		$destination = $res->fetchColumn();
 		$topic_id = (int) $_GET['topic'];
 		$reply_id = 0;
-		$template->title .= ' for <a href="' . DIR . 'topic/' . $topic_id . '">topic</a> author';
+		$template->title .= ' für <a href="' . DIR . 'topic/' . $topic_id . '">den Autor dieses Fadens</a>';
 	} else if(ctype_digit($_GET['reply'])) {
 		$res = $db->q('SELECT author, parent_id FROM replies WHERE id = ?', $_GET['reply']);
 		if($db->num_rows() == 0) {
-			error::fatal('There is no reply with that ID.');
+			error::fatal('Es gibt keine Antwort mit der ID');
 		}
 		list($destination, $topic_id) = $res->fetch();
 		$reply_id = $_GET['reply'];
-		$template->title .= ' for <a href="' . DIR . 'topic/' . $topic_id . '#reply_' . $_GET['reply'] . '">reply</a> author';
+		$template->title .= ' für <a href="' . DIR . 'topic/' . $topic_id . '#reply_' . $_GET['reply'] . '">den Autor dieser Antwort</a>';
 	} else {
-		error::fatal('The post ID was not valid.');
+		error::fatal('Diese ID ist ungültig.');
 	}
 }
 // ...none of the above?
 else {
-	error::fatal('You did not specify any valid destination for this message.');
+	error::fatal('Du hast keinen Empfänger für die Nachricht angegeben.');
 }
 
 if($_POST['submit']) {
@@ -110,13 +110,13 @@ if($_POST['submit']) {
 	if( ! $perm->is_admin() && ! $perm->is_mod()) {
 		$db->q('SELECT 1 FROM private_messages WHERE source = ? AND time > ? LIMIT 1', $_SESSION['UID'], $_SERVER['REQUEST_TIME'] - FLOOD_CONTROL_PM);
 		if($db->num_rows() > 0) {
-			error::add('Please wait at least '.FLOOD_CONTROL_PM.' seconds between private messages.');
+			error::add('Bitte warte mindestens '.FLOOD_CONTROL_PM.' Sekunden, bevor du eine neue Nachricht schreibst.');
 		}
 		
 		$global_check = $db->q('SELECT count(*) FROM private_messages WHERE time > ?', $_SERVER['REQUEST_TIME'] - 300);
 		$global_count = $global_check->fetchColumn();
 		if($global_count > MAX_GLOBAL_PM) {
-			error::add('Too many PMs have been sent in the last 5 minutes. Try again in a moment.');
+			error::add('Es wurden zu viele Nachrichten in den letzten fünf Minuten geschickt. Versuche es später noch einmal.');
 		}
 	}
 	
@@ -131,7 +131,7 @@ if($_POST['submit']) {
 		}
 		
 		if($banned) {
-			$contents .= "\n\n" . '(This is an appeal of the ban of '.htmlspecialchars($banned).'.)';
+			$contents .= "\n\n" . '(Dies ist ein Einspruch gegen die Verbannung von '.htmlspecialchars($banned).'.)';
 		}
 		
 		$db->q
@@ -143,7 +143,7 @@ if($_POST['submit']) {
 		);
 	
 		if($new_id = $db->lastInsertId()) {
-			$notice = 'Private message sent.';
+			$notice = 'Nachricht versendet.';
 			// If this message isn't a reply, set its "parent" as its own ID. Hack-ish, but the best solution IMO.
 			if($parent === 0) {
 				$parent = $new_id;
@@ -157,7 +157,7 @@ if($_POST['submit']) {
 			// Delete all notifications for this PM, if it's been dismissed (so other mods don't have to read it)
 			if($_POST['dismiss'] && $perm->get('read_mod_pms')) {
 				$db->q('DELETE FROM pm_notifications WHERE parent_id = ?', $parent);
-				$notice = 'Private message sent and dismissed.';
+				$notice = 'Nachricht gesendet und abgewiesen.';
 			}
 			// Create new notifications for the PM.
 			if( ! $ignored) {
@@ -181,7 +181,7 @@ if($_POST['submit']) {
 			
 			redirect($notice, 'private_message/' . $new_id);
 		} else {
-			error::add('An error occurred while sending your private message.');
+			error::add('Ein Fehler beim Senden der Nachricht ist aufgetreten.');
 		}	
 	}
 }
@@ -200,7 +200,7 @@ error::output();
 
 if($banned):
 ?>
-<p>This is the only PM you'll be able to send while banned, so make it count.</p>
+<p>Dies ist die einzige Nachricht, die du senden darfst, während du gebannt bist..</p>
 <?php
 endif;
 ?>
@@ -225,13 +225,13 @@ endif;
 <?php 
 	if($_GET['replyto'] && ($prev['destination'] == 'mods' || $prev['destination'] == 'admins') && $perm->get('read_mod_pms') ):
 ?>
-		<div class="row"> <input type="checkbox" name="dismiss" id="dismiss" class="inline" <?php echo ( ! isset($_POST['dismiss']) ? '' : 'checked="checked" ') ?>/> <label for="dismiss" class="inline help" title="If checked, other <?php echo $prev['destination'] ?> will no longer be notified of the original message or its current replies (unless the sender replies again).">Dismiss message</label></div>
+		<div class="row"> <input type="checkbox" name="dismiss" id="dismiss" class="inline" <?php echo ( ! isset($_POST['dismiss']) ? '' : 'checked="checked" ') ?>/> <label for="dismiss" class="inline help" title="Wenn aktiv, bekommtn andere <?php echo $prev['destination'] ?> nicht länger Benachrichtigungen zur Nachricht oder Antworten darauf (außer, der Absender antwortet).">Nachricht abweisen</label></div>
 <?php 
 	endif; 
 ?>
 	<div class="row">
-		<input type="submit" name="preview" value="Preview" class="inline" tabindex="3" />
-		<input type="submit" name="submit" value="Send" class="inline" tabindex="4" />
+		<input type="submit" name="preview" value="Vorschau" class="inline" tabindex="3" />
+		<input type="submit" name="submit" value="Senden" class="inline" tabindex="4" />
 	</div>
 </form>
 

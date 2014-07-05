@@ -5,10 +5,10 @@ define('REPRIEVE_BAN', true);
 require './includes/bootstrap.php';
 
 force_id();
-$template->title = 'Private message';
+$template->title = 'Private Nachricht';
 
 if( ! ctype_digit($_GET['id'])) {
-	error::fatal('Invalid ID.');
+	error::fatal('Ungültige ID');
 }
 
 if($perm->uid_banned($_SESSION['UID'])) {
@@ -31,8 +31,8 @@ $res = $db->q
 $pm = $res->fetchObject();
 
 if( ! $pm) {
-	$template->title = 'Non-existent message';
-	error::fatal('There is no such private message.');
+	$template->title = 'Nachricht existiert nicht.';
+	error::fatal('Es gibt keine solche Nachricht.');
 }
 
 $op_destination = $pm->destination;
@@ -41,11 +41,11 @@ $op_destination = $pm->destination;
 if( ! $perm->get('read_admin_pms')) {
 	/* If the message isn't a group PM, and the user didn't send or receive it, deny access. */
 	if($pm->destination !== $_SESSION['UID'] && $pm->source !== $_SESSION['UID'] && $pm->destination != 'mods' && $pm->destination != 'admins') {
-		error::fatal('This message is not addressed to you.');
+		error::fatal('Die Nachricht ist nicht für dich bestimmt!');
 	}
 	/* If the message is a group PM, but the user isn't the sender or a member of the group, deny access. */
 	if(	($pm->destination == 'admins' && $pm->source !== $_SESSION['UID']) || ($pm->destination == 'mods' && $pm->source !== $_SESSION['UID'] && !$perm->get('read_mod_pms')) ) {
-		error::fatal(m('Error: Access denied'));
+		error::fatal(m('Fehler: Zugriff verweigert'));
 	}
 }
 
@@ -55,13 +55,13 @@ if($pm->parent !== $_GET['id']) {
 }
 
 if($pm->destination == 'mods') {
-	$template->title .= ' to all moderators';
+	$template->title .= ' an alle Moderatoren';
 } else if($pm->destination == 'admins') {
-	$template->title .= ' to all administrators';
+	$template->title .= ' an alle Admins';
 }
 
 if($pm->source == 'system') {
-	$template->title = 'System message';
+	$template->title = 'Systemnachricht';
 	$system_pm = true;
 }
 
@@ -88,7 +88,7 @@ do {
 	} else {
 		$author = '<span class="poster_number_' . $participants[$pm->source] . '">' . format_name($pm->name, $pm->trip, $perm->get('link', $pm->source), $participants[$pm->source]) . '</span>';
 		if($pm->source == $_SESSION['UID']) {
-			$author .= ' <span class="unimportant">(you)</span>';
+			$author .= ' <span class="unimportant">(du)</span>';
 		}
 	}
 	?>
@@ -112,7 +112,7 @@ do {
 					$recipient_trip = $reply->tripfag;
 				}
 				
-				echo '<p class="unimportant">(This message was sent via '. ($pm->destination==$_SESSION['UID'] ? 'your' : 'the recipient\'s') .' ' . (empty($pm->reply) ? 'original post' : '<a href="'.DIR.'reply/'.$pm->reply.'" class="help" title="' . parser::snippet($reply->body) . '">reply</a>') . ' as ' . format_name($recipient_name, $recipient_trip) . ' in "<strong><a href="'.DIR.'topic/' . $pm->topic . '" class="help" title="' . parser::snippet($topic->body) . '">' . htmlspecialchars($topic->headline) . '</a></strong>".)</p>';
+				echo '<p class="unimportant">(Diese Nachricht wurde über '. ($pm->destination==$_SESSION['UID'] ? 'deinen' : 'des Empfängers') .' ' . (empty($pm->reply) ? 'Beitrag' : '<a href="'.DIR.'reply/'.$pm->reply.'" class="help" title="' . parser::snippet($reply->body) . '">Antwort</a>') . ' als ' . format_name($recipient_name, $recipient_trip) . ' in "<strong><a href="'.DIR.'topic/' . $pm->topic . '" class="help" title="' . parser::snippet($topic->body) . '">' . htmlspecialchars($topic->headline) . '</a> versendet</strong>".)</p>';
 			}
 ?>
 
@@ -120,31 +120,31 @@ do {
 <?php
 			if($pm->ignored && $_SESSION['UID'] == $pm->destination):
 ?>
-				<li><a href="<?php echo DIR ?>unignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really stop ignoring PMs from this user?');">Unignore</a></li>
+				<li><a href="<?php echo DIR ?>unignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Wirklich diesen Benutzer nicht mehr ignorieren?');">Nicht mehr ignorieren</a></li>
 <?php 
 			elseif($pm->destination == $_SESSION['UID'] && $pm->source != 'system'): 
 ?>
-				<li><a href="<?php echo DIR ?>ignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really ignore all future PMs from this user?');">Ignore</a></li>
+				<li><a href="<?php echo DIR ?>ignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Wirklich alle Nachrichten dieses Benutzers ignorieren?');">Ignorieren</a></li>
 <?php 
 			endif; 
 			
 			if($perm->get('view_profile') && $pm->source != 'system'): 
 ?>
-				<li><a href="<?php echo DIR ?>profile/<?php echo $pm->source ?>">Profile</a></li>
+				<li><a href="<?php echo DIR ?>profile/<?php echo $pm->source ?>">Profil</a></li>
 <?php
 			endif;
 			if($perm->get('delete')):
 ?>
-				<li><a href="<?php echo DIR ?>delete_message/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really delete this PM?');">Delete</a></li>
+				<li><a href="<?php echo DIR ?>delete_message/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Wirklich diese Nachricht löschen?');">Löschen</a></li>
 <?php 
 			else: 
 ?>
-				<li><a href="<?php echo DIR ?>report_PM/<?php echo $pm->id ?>">Report</a></li>
+				<li><a href="<?php echo DIR ?>report_PM/<?php echo $pm->id ?>">Melden</a></li>
 <?php 
 			endif; 
 			if($pm->parent == $pm->id && (($op_destination == 'mods' && $perm->get('read_mod_pms')) || ($op_destination == 'admins' && $perm->get('read_admin_pms'))) ):
 ?>
-				<li><a href="<?php echo DIR ?>dismiss_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really dismiss this PM?');">Dismiss</a></li>
+				<li><a href="<?php echo DIR ?>dismiss_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Wirklich diese Nachricht abweisen?');">Abweisen</a></li>
 <?php 
 			endif;
 ?>
@@ -163,8 +163,8 @@ do {
 if(empty($has_appealed) && ! isset($system_pm)): 
 ?>
 <ul class="menu">
-	<li><a href="<?php echo DIR ?>reply_to_message/<?php echo (int) $_GET['id']; ?>" onclick="$('#quick_reply').toggle();$('#qr_text').get(0).scrollIntoView(true);$('#qr_text').focus(); return false;">Reply</a></li>
-	<li><a href="<?php echo DIR ?>private_messages">Inbox</a></li>
+	<li><a href="<?php echo DIR ?>reply_to_message/<?php echo (int) $_GET['id']; ?>" onclick="$('#quick_reply').toggle();$('#qr_text').get(0).scrollIntoView(true);$('#qr_text').focus(); return false;">Antworten</a></li>
+	<li><a href="<?php echo DIR ?>private_messages">Posteingang</a></li>
 </ul>
 
 <div id="quick_reply" class="noscreen">
@@ -182,13 +182,13 @@ if(empty($has_appealed) && ! isset($system_pm)):
 <?php 
 		if( ($op_destination == 'mods' && $perm->get('read_mod_pms')) || ($op_destination == 'admins' && $perm->get('read_admin_pms')) ):
 ?>
-			<div class="row"> <input type="checkbox" name="dismiss" id="dismiss" class="inline" checked="checked" /> <label for="dismiss" class="inline help" title="If checked, other <?php echo $op_destination ?> will no longer be notified of this message or its current replies (unless the original sender replies again).">Dismiss message</label></div>
+			<div class="row"> <input type="checkbox" name="dismiss" id="dismiss" class="inline" checked="checked" /> <label for="dismiss" class="inline help" title="Wenn aktiv, werden andere <?php echo $op_destination ?> nicht mehr von dieser Nachricht in Kenntnis gesetzt.">Nachricht abweisen</label></div>
 <?php 
 		endif;
 ?>
 		<div class="row">
-			<input type="submit" name="preview" value="Preview" class="inline" tabindex="3"/>
-			<input type="submit" name="submit" value="Send" class="inline" tabindex="4" />
+			<input type="submit" name="preview" value="Vorschau" class="inline" tabindex="3"/>
+			<input type="submit" name="submit" value="Senden" class="inline" tabindex="4" />
 		</div>
 	</form>
 </div>

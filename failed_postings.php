@@ -1,15 +1,15 @@
 <?php
 require './includes/bootstrap.php';
 update_activity('failed_postings');
-$template->title = 'Failed postings';
+$template->title = 'Fehlgeschlagene Beiträge';
 $items_per_page = ITEMS_PER_PAGE;
 
 $res = $db->q('SELECT time, uid, reason, headline, body FROM failed_postings ORDER BY time DESC LIMIT '. (int) $items_per_page);
 
 $columns = array(
-	'Error message',
-	'Poster',
-	'Age ▼'
+	'Fehlermeldung',
+	'Autor',
+	'Alter ▼'
 );
 if ( ! $perm->get('view_profile')) {
 	unset($columns[1]);
@@ -26,7 +26,7 @@ while (list($fail_time, $fail_uid, $fail_reason, $fail_headline, $fail_body) = $
 	if (empty($fail_headline)) {
 		$tooltip = $fail_body;
 	} else if (!empty($fail_body)) {
-		$tooltip = 'Headline: ' . $fail_headline . ' Body: ' . $fail_body;
+		$tooltip = 'Titel: ' . $fail_headline . ' Inhalt: ' . $fail_body;
 	}
 	
 	$fail_reasons  = unserialize($fail_reason);
@@ -51,6 +51,6 @@ while (list($fail_time, $fail_uid, $fail_reason, $fail_headline, $fail_body) = $
 	
 	$table->row($values);
 }
-$table->output('(No failed postings to display.)');
+$table->output('Keine fehlgeschlagenen Beiträge vorhanden.');
 $template->render();
 ?>

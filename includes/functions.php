@@ -81,7 +81,7 @@ function create_id() {
 		$res = $db->q('SELECT COUNT(*) FROM users WHERE ip_address = ? AND first_seen > (? - 3600)', $_SERVER['REMOTE_ADDR'], $_SERVER['REQUEST_TIME']);
 		$uids_recent = $res->fetchColumn();
 		if($uids_recent > RECAPTCHA_MAX_UIDS_PER_HOUR) { 
-			show_captcha('Please enable cookies to use this site.');
+			show_captcha('Bitte aktiviere Cookies.');
 		}
 	}
 		
@@ -102,7 +102,7 @@ function create_id() {
 	$_SESSION['UID'] = $user_id;
 	$_SESSION['topic_visits'] = array();
 	$_SESSION['post_count'] = 0;
-	$_SESSION['notice'] = m('Notice: Welcome', SITE_TITLE);
+	$_SESSION['notice'] = m('Hinweis: Willkommen', SITE_TITLE);
 }
 
 function generate_password() {
@@ -155,7 +155,7 @@ function force_id() {
 	global $db, $perm;
 	
 	if( ! $_SESSION['ID_activated']) {
-		error::fatal(m('Error: No ID'));
+		error::fatal(m('Fehler: keine ID'));
 	}
 	
 	if(ALLOW_BAN_READING && ! defined('REPRIEVE_BAN')) {
@@ -167,7 +167,7 @@ function force_id() {
 		$is_whitelisted = $res->fetchColumn();
 		if( ! $is_whitelisted) {
 			if(check_proxy($_SERVER['REMOTE_ADDR'])) {
-				if( show_captcha('You appear to be using a proxy ('.htmlspecialchars($_SERVER['REMOTE_ADDR']).'). Please fill in the following CAPTCHA to whitelist your UID and continue. (If you already have a whitelisted UID, <a href="'.DIR.'restore_ID">restore it</a>.)') ) {
+				if( show_captcha('Du benutzt anscheinend ein Proxy ('.htmlspecialchars($_SERVER['REMOTE_ADDR']).'). Bitte bearbeite das folgende CAPTCHA. (Wenn du schon eine gültige ID hattest, <a href="'.DIR.'restore_ID">stell sie wieder her</a>.)') ) {
 					$_SESSION['IP_checked'] = true;
 					$db->q('INSERT INTO whitelist (uid) VALUES (?)', $_SESSION['UID']);
 				}
@@ -232,12 +232,12 @@ function show_captcha($message) {
         }
 	}
 	if(empty($message)) {
-		$message = m('CAPTCHA preface');
+		$message = m('CAPTCHA-Vorspann');
 	}
 	echo '<p>'.$message.'</p>';
 	echo '<form action="" method="post">';
 	echo recaptcha_get_html(RECAPTCHA_PUBLIC_KEY, $error);
-	echo '<input type="submit" value="Continue" />';
+	echo '<input type="submit" value="Weiter" />';
 	foreach($_POST as $k => $v) { // Let the user resume as intended
 		if($k == 'recaptcha_challenge_field' || $k == 'recaptcha_response_field') {
 			continue;
@@ -328,12 +328,12 @@ function super_trim($text) {
 function age($timestamp, $comparison = null) {
 	static $units = array
 	(
-		'second' => 60,
-		'minute' => 60,
-		'hour' => 24,
-		'day' => 7,
-		'week' => 4.25, 
-		'month' => 12
+		'Sek.' => 60,
+		'Min.' => 60,
+		'Std.' => 24,
+		'Tg.' => 7,
+		'Wo.' => 4.25, 
+		'Mo.' => 12
 	);
 	if(is_null($comparison)) {
 		$comparison = $_SERVER['REQUEST_TIME'];
@@ -344,18 +344,18 @@ function age($timestamp, $comparison = null) {
 		if($age_next_unit < 1) { // Are there enough of the current unit to make one of the next unit?
 			$age_current_unit = floor($age_current_unit);
 			$formatted_age = $age_current_unit . ' ' . $unit;
-			return $formatted_age . ($age_current_unit == 1 ? '' : 's');
+			return $formatted_age . ($age_current_unit == 1 ? '' : '');
 		}
 		$age_current_unit = $age_next_unit;
 	}
 
 	$age_current_unit = round($age_current_unit, 1);
-	$formatted_age = $age_current_unit . ' year';
-	return $formatted_age . (floor($age_current_unit) == 1 ? '' : 's');	
+	$formatted_age = $age_current_unit . ' Jahr';
+	return $formatted_age . (floor($age_current_unit) == 1 ? '' : 'e');	
 }
 
 function format_date($timestamp) {
-	return date('Y-m-d H:i:s \U\T\C — l \t\h\e jS \o\f F Y, g:i A', $timestamp);
+	return date('j.n.Y. G:i:s', $timestamp);
 }
 
 function format_number($number) {
@@ -369,7 +369,7 @@ function format_name($name, $tripcode, $link = null, $poster_number = null, $sho
 	static $anonymous;
 	
 	if( ! isset($anonymous)) {
-		$anonymous = m('Anonymous');
+		$anonymous = m('Anonym');
 	}
 	
 	if(empty($name) && empty($tripcode)) {
@@ -416,7 +416,7 @@ function format_headline($headline, $id, $reply_count, $poll, $locked, $sticky) 
 	$headline = '<a href="'.DIR.'topic/' . $id . page($reply_count) . '"' . (isset($_SESSION['topic_visits'][$id]) ? ' class="visited"' : '') . '>' . $headline . '</a>';
 		
 	if($poll) {
-		$headline .= ' <span class="poll_marker">(Poll)</span>';
+		$headline .= ' <span class="poll_marker">(Abstimmung)</span>';
 	}
 		
 	if($_SESSION['settings']['posts_per_page'] && $reply_count > $_SESSION['settings']['posts_per_page']) {
@@ -430,7 +430,7 @@ function format_headline($headline, $id, $reply_count, $poll, $locked, $sticky) 
 		
 	$headline .= '<small class="topic_info">';
 	if($locked) {
-		$headline .= '[LOCKED]';
+		$headline .= '[GESCHLOSSEN]';
 	}
 	if($sticky) {
 		$headline .= ' [STICKY]';
@@ -453,7 +453,7 @@ function replies($topic_id, $topic_replies) {
 		} else {
 			$output .= 'all-';
 		}
-		$output .= 'new</a>)</span>';
+		$output .= 'neu</a>)</span>';
 	}
 	
 	return $output;
@@ -504,11 +504,11 @@ function check_length($text, $name, $min_length, $max_length) {
 	$text_length = strlen($text);
 
 	if($min_length > 0 && empty($text)) {
-		error::add('The ' . $name . ' can not be blank.');
+		error::add('' . $name . ' kann nicht leer sein.');
 	} else if($text_length > $max_length) {
-		error::add('The ' . $name . ' was ' . number_format($text_length - $max_length) . ' characters over the limit (' . number_format($max_length) . ').');
+		error::add('' . $name . ' war ' . number_format($text_length - $max_length) . ' Zeichen zu lang (' . number_format($max_length) . ').');
 	} else if($text_length < $min_length) {
-		error::add('The ' . $name . ' was too short.');
+		error::add('' . $name . ' war zu kurz.');
 	}
 }
 
@@ -521,7 +521,7 @@ function csrf_token() { // Prevent cross-site redirection forgeries, create toke
 
 function check_token() { // Prevent cross-site redirection forgeries, token check.
 	if($_POST['CSRF_token'] !== $_SESSION['token']) {
-		error::add(m('Error: Invalid token'));
+		error::add(m('Fehler: ungültiger Token'));
 		return false;
 	}
 	return true;
@@ -536,7 +536,7 @@ function delete_topic($id, $notify = true) {
 	$author_name = trim($author_name . ' ' . $author_trip);
 			
 	if($perm->is_admin($author_id) && $_SESSION['UID'] != $author_id) {
-		error::fatal(m('Error: Access denied'));
+		error::fatal(m('Fehler: Zugriff verweigert.'));
 	}
 			
 	/* Dump the image. */
@@ -558,7 +558,7 @@ function delete_topic($id, $notify = true) {
 	log_mod('delete_topic', $id, $author_name);
 			
 	if($author_id != $_SESSION['UID'] && $notify) {
-		system_message($author_id, m('PM: Deleted topic', $id));
+		system_message($author_id, m('PN: gelöschter Faden.', $id));
 	}
 }
 
@@ -571,14 +571,14 @@ function delete_reply($id, $notify = true) {
 	$author_name = trim($author_name . ' ' . $author_trip);
 			
 	if($perm->is_admin($author_id) && $_SESSION['UID'] != $author_id) {
-		error::fatal(m('Error: Access denied'));
+		error::fatal(m('Fehler: Zugriff verweigert.'));
 	}
 			
 	$res = $db->q('SELECT parent_id, time FROM replies WHERE id = ?', $id);
 	list($parent_id, $reply_time) = $res->fetch();
 
 	if( ! $parent_id) {
-		error::fatal('No such reply.');
+		error::fatal('Antwort existiert nicht.');
 	} else {
 		delete_image('reply', $id);
 	}
@@ -602,7 +602,7 @@ function delete_reply($id, $notify = true) {
 	log_mod('delete_reply', $id, $author_name);
 			
 	if($author_id != $_SESSION['UID'] && $notify) {
-		system_message($author_id, m('PM: Deleted reply', $id));
+		system_message($author_id, m('PN: gelöschte Nachricht', $id));
 	}
 }
 
@@ -611,7 +611,7 @@ function delete_image($mode = 'reply', $post_id, $hard_delete = false) {
 	global $db;
 	
 	if($mode != 'reply' && $mode != 'topic') {
-		error::fatal('Invalid image deletion type.');
+		error::fatal('Ungültiger Befehl für das Bild.');
 	}
 	
 	$img = $db->q('SELECT COUNT(*), file_name FROM images WHERE md5 = (SELECT md5 FROM images WHERE '.$mode.'_id = ? LIMIT 1) AND deleted = 0', $post_id);

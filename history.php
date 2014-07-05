@@ -4,22 +4,22 @@ update_activity('history');
 force_id();
 
 $page = new Paginate();
-$template->title = 'Your posting history';
+$template->title = 'Dein Beitragsverlauf';
 
 if ($page->current > 1) {
-	$template->title .= ', page #' . number_format($page->current);
+	$template->title .= ', Seite ' . number_format($page->current);
 }
 
 if(isset($_POST['clear_citations']) && check_token()) {
 	$db->q('DELETE FROM citations WHERE uid = ?', $_SESSION['UID']);
-	redirect('Citations cleared.', '');
+	redirect('Zitate gelöscht.', '');
 }
 
 if($notifications['citations']) {
 	if( ! isset($_GET['citations'])) {
-		echo '<h4 class="section">Replies to your replies</h4>';
+		echo '<h4 class="section">Antworten auf deine Antworten.</h4>';
 	} else {
-		$template->title = 'Replies to your replies';
+		$template->title = 'Antworten auf deine Antworten';
 	}
 
 	// Delete notifications of replies-to-replies that no longer exist.
@@ -46,9 +46,9 @@ if($notifications['citations']) {
 
 	$columns = array
 	(
-		'Reply to your reply',
-		'Topic',
-		'Age ▼'
+		'Antwort auf deine Antwort',
+		'Faden',
+		'Alter ▼'
 	);
 	$citations = new Table($columns, 1);
 	$citations->add_td_class(1, 'topic_headline');
@@ -58,34 +58,34 @@ if($notifications['citations']) {
 		$values = array
 		(
 			'<a href="'.DIR.'topic/' . $reply->parent_id . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $reply->id . '">' . parser::snippet($reply->body) . '</a>',
-			'<a href="'.DIR.'topic/' . $reply->parent_id . '">' . htmlspecialchars($reply->headline) . '</a> <span class="help unimportant" title="' . format_date($reply->parent_time) . '">(' . age($reply->parent_time) . ' old)</span>',
+			'<a href="'.DIR.'topic/' . $reply->parent_id . '">' . htmlspecialchars($reply->headline) . '</a> <span class="help unimportant" title="' . format_date($reply->parent_time) . '">(' . age($reply->parent_time) . ' alt)</span>',
 			'<span class="help" title="' . format_date($reply->time) . '">' . age($reply->time) . '</span>'
 		);
 		
 		$citations->row($values);
 	}
-	$citations->output('(It appears that the reply to your reply has since been deleted.)');
+	$citations->output('(Es scheint, als wäre diese Antwort gelöscht worden.)');
 ?>
 <form action="" method="post">
 	<?php csrf_token() ?>
-	<input type="submit" name="clear_citations" value="Clear citations" class="help" title="You will no longer be notified of these replies." />
+	<input type="submit" name="clear_citations" value="Clear citations" class="help" title="Du wirst für diese Antworten nicht länger benachrichtigt." />
 </form>
 <?php
 }
 
 if( ! $_GET['citations']) {
 	if($notifications['citations']) {
-		echo '<h4 class="section">Your posts</h4>';
+		echo '<h4 class="section">Deine Beiträge</h4>';
 	}
 	// List topics.
 	$res = $db->q('SELECT id, time, replies, visits, headline, poll, locked, sticky FROM topics WHERE author = ? AND deleted = 0 ORDER BY id DESC LIMIT '.$page->offset.', '.$page->limit, $_SESSION['UID']);
 
 	$columns = array
 	(
-		'Headline',
-		'Replies',
-		'Visits',
-		'Age ▼'
+		'Titel',
+		'Antworten',
+		'Aufrufe',
+		'Alter ▼'
 	);
 	$topics = new Table($columns, 0);
 	$topics->add_td_class(0, 'topic_headline');
@@ -117,10 +117,10 @@ if( ! $_GET['citations']) {
 
 	$columns = array
 	(
-		'Reply snippet',
-		'Topic',
-		'Replies',
-		'Age ▼'
+		'Antwortauszug',
+		'Titel',
+		'Antworten',
+		'Alter ▼'
 	);
 	$replies = new Table($columns, 1);
 	$replies->add_td_class(1, 'topic_headline');
@@ -130,7 +130,7 @@ if( ! $_GET['citations']) {
 		$values = array
 		(
 			'<a href="'.DIR.'topic/' . $parent_id . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $reply_id . '">' . parser::snippet($reply_body) . '</a>',
-			'<a href="'.DIR.'topic/' . $parent_id . '">' . htmlspecialchars($topic_headline) . '</a> <span class="help unimportant" title="' . format_date($topic_time) . '">(' . age($topic_time) . ' old)</span>',
+			'<a href="'.DIR.'topic/' . $parent_id . '">' . htmlspecialchars($topic_headline) . '</a> <span class="help unimportant" title="' . format_date($topic_time) . '">(' . age($topic_time) . ' alt)</span>',
 			replies($parent_id, $topic_replies),
 			'<span class="help" title="' . format_date($reply_time) . '">' . age($reply_time) . '</span>'
 		);
@@ -142,7 +142,7 @@ if( ! $_GET['citations']) {
 }
 
 if($num_topics_fetched + $num_replies_fetched == 0 && ! isset($_GET['citations'])) {
-	echo '<p>You haven\'t posted anything yet.</p>';
+	echo '<p>Du hast noch nichts geschrieben.</p>';
 }
 
 $page->navigation('history', $num_replies_fetched);
